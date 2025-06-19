@@ -167,7 +167,7 @@ export default function AdGenerator() {
 
     // 绘制普通底部文字
     let currentY = startY
-    texts.forEach((text, index) => {
+    texts.forEach((text) => {
       if (text.text.trim()) {
         ctx.font = `bold ${Math.max(width * 0.04, 20)}px Arial, sans-serif`
         ctx.fillStyle = text.color

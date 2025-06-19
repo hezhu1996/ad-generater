@@ -38,7 +38,6 @@ export default function AdGenerator() {
     padding: '12px 24px',
     textOptions: ['立即购买']
   })
-  const [isGenerating, setIsGenerating] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -324,66 +323,6 @@ export default function AdGenerator() {
     }
     
     return combinations
-  }
-
-  const handleGenerateAds = async () => {
-    const combinations = generateAllCombinations()
-    
-    if (!image || combinations.length === 0) {
-      alert('请上传图片并添加至少一个广告文字或CTA按钮文字选项')
-      return
-    }
-
-    setIsGenerating(true)
-
-    try {
-      const zip = new JSZip()
-      
-      // 生成不同平台的广告图片
-      const platforms = [
-        { name: 'Facebook_Square', width: 1080, height: 1080 },
-        { name: 'Facebook_Landscape', width: 1200, height: 630 },
-        { name: 'Google_Ads_Square', width: 1200, height: 1200 },
-        { name: 'Google_Ads_Landscape', width: 1200, height: 628 },
-        { name: 'Instagram_Square', width: 1080, height: 1080 },
-        { name: 'Instagram_Story', width: 1080, height: 1920 },
-        { name: 'LinkedIn_Single', width: 1200, height: 627 },
-        { name: 'Twitter_Post', width: 1200, height: 675 }
-      ]
-
-      let imageCounter = 1
-      
-      for (const platform of platforms) {
-        for (const combination of combinations) {
-          const imageData = await generateAdImage(
-            platform.width, 
-            platform.height, 
-            'png',
-            combination.texts,
-            combination.ctaText
-          )
-          
-          if (imageData) {
-            const base64Data = imageData.split(',')[1]
-            const fileName = `${platform.name}_${imageCounter.toString().padStart(3, '0')}.png`
-            zip.file(fileName, base64Data, { base64: true })
-          }
-          imageCounter++
-        }
-        imageCounter = 1 // 重置计数器为下一个平台
-      }
-
-      const content = await zip.generateAsync({ type: 'blob' })
-      const totalImages = platforms.length * combinations.length
-      saveAs(content, `advertisement_images_${totalImages}_variants.zip`)
-      
-      console.log(`生成了 ${totalImages} 张图片 (${platforms.length} 个平台 × ${combinations.length} 个文字组合)`)
-    } catch (error) {
-      console.error('生成广告图片时出错:', error)
-      alert('生成图片时出现错误，请重试')
-    } finally {
-      setIsGenerating(false)
-    }
   }
 
   // 实时预览功能
@@ -697,4 +636,11 @@ export default function AdGenerator() {
                 const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
                 const totalCombinations = textCombinations * ctaCombinations
                 return totalCombinations * 8 // 8个平台
-              })()} (8
+              })()} (8个平台)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
