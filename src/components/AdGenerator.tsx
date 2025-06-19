@@ -14,7 +14,6 @@ interface AdText {
 
 interface AdTextGroup {
   id: string
-  name: string
   options: string[] // 多个文字选项
   color: string
   position: 'top' | 'bottom'
@@ -57,7 +56,6 @@ export default function AdGenerator() {
   const addAdTextGroup = () => {
     const newGroup: AdTextGroup = {
       id: Date.now().toString(),
-      name: `文字组 ${adTextGroups.length + 1}`,
       options: [''],
       color: '#000000',
       position: 'top'
@@ -458,14 +456,6 @@ export default function AdGenerator() {
                 <div key={group.id} className="border rounded-lg p-4 space-y-3">
                   <div className="flex justify-between items-start">
                     <div className="flex-1 space-y-3">
-                      <input
-                        type="text"
-                        placeholder="文字组名称"
-                        value={group.name}
-                        onChange={(e) => updateAdTextGroup(group.id, { name: e.target.value })}
-                        className="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium"
-                      />
-                      
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
                           <label htmlFor={`position-${group.id}`} className="text-sm font-medium text-gray-700">位置:</label>
