@@ -1,36 +1,120 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AI 广告图片生成器
 
-## Getting Started
+一个功能强大的 Next.js 应用，帮助您快速生成适用于各大平台的专业广告图片。
 
-First, run the development server:
+## 🚀 功能特性
 
+### 📸 图片上传
+- 支持 JPG, PNG 格式图片上传
+- 拖拽上传或点击上传
+- 实时预览上传的产品图片
+
+### ✏️ 文字编辑
+- 添加多个广告文字
+- 支持顶部和底部文字位置选择
+- 自定义文字颜色（支持颜色选择器）
+- 动态添加和删除文字
+
+### 🎨 CTA 按钮定制
+- 自定义按钮背景颜色
+- 自定义按钮文字颜色
+- 多种圆角样式选择（无圆角、小圆角、中等圆角、大圆角、胶囊形）
+- 实时预览按钮效果
+
+### 📱 多平台支持
+自动生成适合以下平台的广告图片：
+
+- **Facebook 广告**
+  - 方形 (1080x1080)
+  - 横向 (1200x630)
+- **Google Ads**
+  - 方形 (1200x1200)
+  - 横向 (1200x628)
+- **Instagram**
+  - 方形 (1080x1080)
+  - Story (1080x1920)
+- **LinkedIn 广告** (1200x627)
+- **Twitter 广告** (1200x675)
+
+### 📦 批量下载
+- 一键生成所有平台的广告图片
+- ZIP 格式打包下载
+- 高质量 PNG 输出
+
+## 🛠️ 技术栈
+
+- **Next.js 15.3.4** - React 框架
+- **TypeScript** - 类型安全
+- **Tailwind CSS 4.0** - 样式框架
+- **React Colorful** - 颜色选择器
+- **Fabric.js** - Canvas 操作
+- **html2canvas** - 图片生成
+- **JSZip** - 文件打包
+- **file-saver** - 文件下载
+
+## 🚀 快速开始
+
+### 安装依赖
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 启动开发服务器
+```bash
+npm run dev
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+访问 [http://localhost:3000](http://localhost:3000) 开始使用。
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 构建生产版本
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 📖 使用指南
 
-To learn more about Next.js, take a look at the following resources:
+### 1. 上传产品图片
+- 点击上传区域或拖拽图片到指定区域
+- 支持 JPG、PNG 格式
+- 图片会自动调整大小以适配不同平台要求
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. 添加广告文字
+- 点击"添加文字"按钮
+- 输入广告文案
+- 选择文字位置（顶部/底部）
+- 自定义文字颜色
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. 设计 CTA 按钮
+- 设置按钮背景颜色
+- 设置按钮文字颜色
+- 选择按钮圆角样式
+- 底部文字会自动包装在按钮中
 
-## Deploy on Vercel
+### 4. 生成并下载
+- 点击"生成广告图片"按钮
+- 系统会自动生成 8 种不同尺寸的图片
+- 下载 ZIP 文件包含所有平台的广告图片
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎯 适用场景
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- 电商产品推广
+- 社交媒体营销
+- 品牌宣传活动
+- 促销活动广告
+- 产品发布宣传
+
+## 📝 注意事项
+
+- 确保上传的图片质量足够高，以获得最佳输出效果
+- 文字内容要简洁明了，避免过长
+- 建议使用对比度高的颜色组合以提高可读性
+- 生成的图片已按各平台推荐尺寸优化
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request 来改进这个项目！
+
+## 📄 许可证
+
+MIT License
