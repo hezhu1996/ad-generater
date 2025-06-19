@@ -413,7 +413,7 @@ export default function AdGenerator() {
         <div className="space-y-6">
           {/* 图片上传 */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">上传产品图片</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">上传产品图片</h2>
             <button
               type="button"
               className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors bg-transparent"
@@ -444,7 +444,7 @@ export default function AdGenerator() {
           {/* 广告文字设置 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">广告文字组</h2>
+              <h2 className="text-xl font-semibold text-gray-800">广告文字组</h2>
               <button
                 onClick={addAdTextGroup}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
@@ -468,7 +468,7 @@ export default function AdGenerator() {
                       
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
-                          <label htmlFor={`position-${group.id}`} className="text-sm font-medium">位置:</label>
+                          <label htmlFor={`position-${group.id}`} className="text-sm font-medium text-gray-700">位置:</label>
                           <select
                             id={`position-${group.id}`}
                             value={group.position}
@@ -481,7 +481,7 @@ export default function AdGenerator() {
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium">颜色:</span>
+                          <span className="text-sm font-medium text-gray-700">颜色:</span>
                           <button
                             type="button"
                             className="w-8 h-8 rounded border-2 border-gray-300 cursor-pointer"
@@ -495,7 +495,7 @@ export default function AdGenerator() {
                       {/* 文字选项列表 */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-sm font-medium">文字选项:</label>
+                          <label className="text-sm font-medium text-gray-700">文字选项:</label>
                           <button
                             onClick={() => addTextOption(group.id)}
                             className="text-blue-500 hover:text-blue-600 text-sm"
@@ -557,12 +557,12 @@ export default function AdGenerator() {
 
           {/* 按钮样式设置 */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">CTA 按钮样式</h2>
+            <h2 className="text-xl font-semibold mb-4 text-gray-800">CTA 按钮样式</h2>
             <div className="space-y-4">
               {/* CTA 文字选项 */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium">按钮文字选项</label>
+                  <label className="block text-sm font-medium text-gray-700">按钮文字选项</label>
                   <button
                     onClick={addCtaOption}
                     className="text-blue-500 hover:text-blue-600 text-sm"
@@ -595,7 +595,7 @@ export default function AdGenerator() {
               </div>
               
               <div>
-                <span className="block text-sm font-medium mb-2">背景颜色</span>
+                <span className="block text-sm font-medium mb-2 text-gray-700">背景颜色</span>
                 <div className="flex items-center space-x-2">
                   <button
                     type="button"
@@ -629,7 +629,7 @@ export default function AdGenerator() {
               </div>
               
               <div>
-                <span className="block text-sm font-medium mb-2">文字颜色</span>
+                <span className="block text-sm font-medium mb-2 text-gray-700">文字颜色</span>
                 <div className="flex items-center space-x-2">
                   <button
                     type="button"
@@ -663,7 +663,7 @@ export default function AdGenerator() {
               </div>
               
               <div>
-                <label htmlFor="border-radius-select" className="block text-sm font-medium mb-2">圆角大小</label>
+                <label htmlFor="border-radius-select" className="block text-sm font-medium mb-2 text-gray-700">圆角大小</label>
                 <select
                   id="border-radius-select"
                   value={buttonStyle.borderRadius}
@@ -713,7 +713,7 @@ export default function AdGenerator() {
 
         {/* 右侧预览 */}
         <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4">预览</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">预览</h2>
           <div className="space-y-4">
             {image && (
               <div className="border rounded-lg overflow-hidden">
