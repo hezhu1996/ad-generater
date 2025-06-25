@@ -31,6 +31,7 @@ interface AdText {
   font: string
   x?: number // 自定义位置的X坐标
   y?: number // 自定义位置的Y坐标
+  size?: number // 文字大小比例，默认为1
 }
 
 interface AdTextGroup {
@@ -41,6 +42,7 @@ interface AdTextGroup {
   font: string
   x?: number // 自定义位置的X坐标
   y?: number // 自定义位置的Y坐标
+  size?: number // 文字大小比例，默认为1
 }
 
 interface ButtonStyle {
@@ -52,6 +54,7 @@ interface ButtonStyle {
   font: string
   x?: number // 按钮X位置（百分比）
   y?: number // 按钮Y位置（百分比）
+  size?: number // 按钮大小比例，默认为1
 }
 
 export default function AdGenerator() {
@@ -65,7 +68,8 @@ export default function AdGenerator() {
     textOptions: ['立即购买'],
     font: 'Arial, sans-serif',
     x: 50, // 默认居中
-    y: 75  // 默认在画布下部
+    y: 75, // 默认在画布下部
+    size: 1 // 默认大小比例
   })
   const [isGenerating, setIsGenerating] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null)
@@ -108,7 +112,8 @@ export default function AdGenerator() {
       position: 'custom',
       font: 'Arial, sans-serif',
       x: 50, // 默认X位置(百分比)
-      y: 30  // 默认Y位置(百分比)，设置为靠上以便更容易看到
+      y: 30, // 默认Y位置(百分比)，设置为靠上以便更容易看到
+      size: 1 // 默认大小比例
     }
     setAdTextGroups([...adTextGroups, newGroup])
   }
@@ -194,7 +199,9 @@ export default function AdGenerator() {
     // 改为绘制所有非底部文字（包括顶部和自定义位置）
     texts.forEach((text, index) => {
       if (text.text.trim()) {
-        ctx.font = `bold ${Math.max(width * 0.04, 20)}px ${text.font || 'Arial, sans-serif'}`
+        // 应用大小比例
+        const fontSize = Math.max(width * 0.04, 20) * (text.size || 1);
+        ctx.font = `bold ${fontSize}px ${text.font || 'Arial, sans-serif'}`
         ctx.fillStyle = text.color
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
@@ -225,7 +232,9 @@ export default function AdGenerator() {
     let currentY = startY
     texts.forEach((text) => {
       if (text.text.trim()) {
-        ctx.font = `bold ${Math.max(width * 0.04, 20)}px ${text.font || 'Arial, sans-serif'}`
+        // 应用大小比例
+        const fontSize = Math.max(width * 0.04, 20) * (text.size || 1);
+        ctx.font = `bold ${fontSize}px ${text.font || 'Arial, sans-serif'}`
         ctx.fillStyle = text.color
         ctx.textAlign = 'center'
         ctx.textBaseline = 'top'
@@ -293,6 +302,17 @@ export default function AdGenerator() {
   const generateAdImage = useCallback(async (width: number, height: number, format: string, textCombination: AdText[], ctaText: string) => {
     if (!image || !canvasRef.current) return null
 
+    // 调试输出
+    console.log("绘制文字组合:", textCombination.map(t => ({
+      text: t.text, 
+      position: t.position,
+      size: t.size || 1
+    })));
+    console.log("CTA按钮:", {
+      text: ctaText,
+      size: buttonStyle.size || 1
+    });
+
     return new Promise<string>((resolve) => {
       const canvas = canvasRef.current!
       const ctx = canvas.getContext('2d')!
@@ -333,20 +353,22 @@ export default function AdGenerator() {
         if (customTexts.length > 0) {
           customTexts.forEach(text => {
             if (text.text && text.text.trim()) {
-              ctx.font = `bold ${Math.max(width * 0.04, 20)}px ${text.font || 'Arial, sans-serif'}`;
-              ctx.fillStyle = text.color;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'top';
+              // 应用大小比例，确保正确使用size属性
+              const fontSize = Math.max(width * 0.04, 20) * (text.size || 1);
+              ctx.font = `bold ${fontSize}px ${text.font || 'Arial, sans-serif'}`
+              ctx.fillStyle = text.color
+              ctx.textAlign = 'center'
+              ctx.textBaseline = 'top'
               
               // 明确计算位置
               const xPosition = (text.x !== undefined) ? (text.x / 100) * width : width / 2;
               const yPosition = (text.y !== undefined) ? (text.y / 100) * height : height / 4;
               
               // 添加文字描边效果
-              ctx.strokeStyle = '#ffffff';
-              ctx.lineWidth = 3;
-              ctx.strokeText(text.text, xPosition, yPosition);
-              ctx.fillText(text.text, xPosition, yPosition);
+              ctx.strokeStyle = '#ffffff'
+              ctx.lineWidth = 3
+              ctx.strokeText(text.text, xPosition, yPosition)
+              ctx.fillText(text.text, xPosition, yPosition)
               
               // 在预览状态下，为拖动中的文字添加视觉指示
               if (draggedText === text.id.split('_')[0]) {
@@ -357,7 +379,7 @@ export default function AdGenerator() {
                 
                 // 添加选中框
                 const metrics = ctx.measureText(text.text);
-                const textHeight = Math.max(width * 0.04, 20);
+                const textHeight = fontSize; // 使用正确的字体大小
                 ctx.strokeStyle = '#3b82f6';
                 ctx.lineWidth = 2;
                 ctx.setLineDash([5, 3]);
@@ -382,19 +404,23 @@ export default function AdGenerator() {
       }
       img.src = image
     })
-  }, [image, buttonStyle, draggedText])
+  }, [image, buttonStyle, draggedText, draggedButton])
 
   // 分离CTA按钮绘制函数
   const drawCTAButton = (ctx: CanvasRenderingContext2D, width: number, height: number, imageHeight: number, ctaButtonText: string, ctaButtonStyle: ButtonStyle) => {
     if (!ctaButtonText.trim()) return;
     
+    // 应用大小比例
+    const sizeMultiplier = ctaButtonStyle.size || 1;
+    
     // 设置按钮样式
-    ctx.font = `bold ${Math.max(width * 0.035, 18)}px ${ctaButtonStyle.font}`;
+    const fontSize = Math.max(width * 0.035, 18) * sizeMultiplier;
+    ctx.font = `bold ${fontSize}px ${ctaButtonStyle.font}`;
     const textMetrics = ctx.measureText(ctaButtonText);
     const textWidth = textMetrics.width;
-    const textHeight = Math.max(width * 0.035, 18);
+    const textHeight = fontSize;
     
-    const buttonPadding = 12;
+    const buttonPadding = 12 * sizeMultiplier;
     const buttonWidth = textWidth + (buttonPadding * 2);
     const buttonHeight = textHeight + (buttonPadding * 1.5);
     
@@ -418,7 +444,7 @@ export default function AdGenerator() {
     const radiusValue = ctaButtonStyle.borderRadius.replace('px', ''); // 移除 px 单位
     const radius = parseInt(radiusValue) || 8;
     ctx.fillStyle = ctaButtonStyle.backgroundColor;
-    drawRoundedRect(ctx, buttonX, buttonY, buttonWidth, buttonHeight, radius);
+    drawRoundedRect(ctx, buttonX, buttonY, buttonWidth, buttonHeight, radius * sizeMultiplier);
     ctx.fill();
     
     // 绘制按钮文字
@@ -466,7 +492,8 @@ export default function AdGenerator() {
         position: group.position,
         font: group.font,
         x: group.x,
-        y: group.y
+        y: group.y,
+        size: group.size
       }))
     )
     
@@ -595,10 +622,10 @@ export default function AdGenerator() {
     };
     
     // 如果不是拖动中就更新预览
-    if (!draggedText) {
+    if (!draggedText && !draggedButton) {
       updatePreview();
     }
-  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText]);
+  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton]);
 
   // 确保在拖动结束后正确更新一次
   useEffect(() => {
@@ -809,6 +836,23 @@ export default function AdGenerator() {
     }
   };
 
+  // 手动刷新预览功能
+  const refreshPreview = useCallback(() => {
+    if (!image || !canvasRef.current) return;
+      
+    try {
+      const combinations = generateAllCombinations();
+      if (combinations.length > 0) {
+        const firstCombination = combinations[0];
+        console.log("手动刷新预览...");
+        generateAdImage(800, 600, 'png', firstCombination.texts, firstCombination.ctaText)
+          .catch(err => console.error('预览刷新失败:', err));
+      }
+    } catch (error) {
+      console.error('手动刷新预览失败:', error);
+    }
+  }, [image, canvasRef, generateAllCombinations, generateAdImage]);
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -935,6 +979,38 @@ export default function AdGenerator() {
                           </div>
                         </div>
                       )}
+                      
+                      {/* 添加文字大小控制 - 不限于自定义位置 */}
+                      <div className="mt-3 bg-gray-50 p-3 rounded-lg">
+                        <label htmlFor={`size-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">
+                          文字大小: {Math.round(((group.size === undefined ? 1 : group.size) * 100))}%
+                        </label>
+                        <div className="flex items-center space-x-2">
+                          <input
+                            id={`size-${group.id}`}
+                            type="range"
+                            min="0.5"
+                            max="2"
+                            step="0.1"
+                            value={group.size === undefined ? 1 : group.size}
+                            onChange={(e) => {
+                              const newSize = parseFloat(e.target.value);
+                              console.log(`设置文字组 ${group.id} 大小为: ${newSize}`);
+                              updateAdTextGroup(group.id, { size: newSize });
+                            }}
+                            className="flex-1"
+                          />
+                          <button
+                            onClick={() => {
+                              updateAdTextGroup(group.id, { size: 1 });
+                              console.log(`重置文字组 ${group.id} 大小为默认值`);
+                            }}
+                            className="bg-gray-200 hover:bg-gray-300 text-xs px-2 py-1 rounded"
+                          >
+                            重置
+                          </button>
+                        </div>
+                      </div>
                       
                       {/* 文字选项列表 */}
                       <div className="space-y-2">
@@ -1142,8 +1218,8 @@ export default function AdGenerator() {
 
               {/* 添加按钮位置控制 */}
               <div className="bg-amber-50 p-3 rounded-lg">
-                <h3 className="text-md font-medium mb-3 text-gray-800">按钮位置 <span className="text-amber-600 text-sm">(也可在预览中直接拖动)</span></h3>
-                <div className="grid grid-cols-2 gap-4">
+                <h3 className="text-md font-medium mb-3 text-gray-800">按钮位置与大小 <span className="text-amber-600 text-sm">(也可在预览中直接拖动)</span></h3>
+                <div className="grid grid-cols-2 gap-4 mb-3">
                   <div>
                     <label htmlFor="button-x" className="block text-sm font-medium mb-1 text-gray-700">
                       X位置: {buttonStyle.x !== undefined ? buttonStyle.x : 50}%
@@ -1172,6 +1248,37 @@ export default function AdGenerator() {
                       onChange={(e) => setButtonStyle({...buttonStyle, y: parseInt(e.target.value)})}
                       className="w-full"
                     />
+                  </div>
+                </div>
+                
+                <div>
+                  <label htmlFor="button-size" className="block text-sm font-medium mb-1 text-gray-700">
+                    按钮大小: {Math.round(((buttonStyle.size === undefined ? 1 : buttonStyle.size) * 100))}%
+                  </label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      id="button-size"
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={buttonStyle.size === undefined ? 1 : buttonStyle.size}
+                      onChange={(e) => {
+                        const newSize = parseFloat(e.target.value);
+                        console.log(`设置按钮大小为: ${newSize}`);
+                        setButtonStyle({...buttonStyle, size: newSize});
+                      }}
+                      className="flex-1"
+                    />
+                    <button
+                      onClick={() => {
+                        setButtonStyle({...buttonStyle, size: 1});
+                        console.log(`重置按钮大小为默认值`);
+                      }}
+                      className="bg-amber-200 hover:bg-amber-300 text-xs px-2 py-1 rounded"
+                    >
+                      重置
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1228,6 +1335,17 @@ export default function AdGenerator() {
                   onMouseLeave={handleCanvasMouseUp}
                   onMouseOver={handleCanvasMouseOver}
                 />
+                
+                {/* 添加刷新预览按钮 */}
+                <button
+                  onClick={refreshPreview}
+                  className="absolute top-2 right-2 bg-blue-500 text-white p-2 rounded-full shadow-md hover:bg-blue-600"
+                  title="刷新预览"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
                 
                 {(adTextGroups.filter(g => g.position === 'custom').length > 0 || true) && (
                   <div className="mt-2 text-xs text-gray-500 text-center">
