@@ -79,7 +79,22 @@ export default function AdGenerator() {
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [debounceUpdate, setDebounceUpdate] = useState<{x: number, y: number} | null>(null)
-  
+    // 新增：预览用的CTA按钮文案索引
+    const [previewCtaIndex, setPreviewCtaIndex] = useState(0);
+    // 新增：每个广告文字组的预览选项索引
+    const [previewTextIndexes, setPreviewTextIndexes] = useState<number[]>([]);
+
+    // 预览渲染逻辑，使用当前CTA文案
+    const previewCtaText = buttonStyle.textOptions.filter(opt => opt.trim())[previewCtaIndex] || '';
+    // 预览渲染逻辑，使用每组 previewTextIndexes 对应的选项
+    const previewTexts = adTextGroups.map((group, groupIdx) => {
+      const options = group.options.filter(opt => opt.trim());
+      const idx = Math.max(0, Math.min(previewTextIndexes[groupIdx] ?? 0, options.length - 1));
+      return {
+        ...group,
+        text: options[idx] || '',
+      };
+    });
   // 添加尺寸编辑状态
   const [editingSize, setEditingSize] = useState<string | null>(null)
   
@@ -795,12 +810,8 @@ export default function AdGenerator() {
       if (!image || !canvasRef.current) return;
       
       try {
-        const combinations = generateAllCombinations();
-        if (combinations.length > 0) {
-          const firstCombination = combinations[0];
-          const currentPlatform = getCurrentPreviewPlatform()
-          await generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, firstCombination.ctaText);
-        }
+        const currentPlatform = getCurrentPreviewPlatform();
+        await generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText);
       } catch (error) {
         console.error('预览更新失败:', error);
       }
@@ -810,7 +821,7 @@ export default function AdGenerator() {
     if (!draggedText && !draggedButton) {
       updatePreview();
     }
-  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes]);
+  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
 
   // 确保在拖动结束后正确更新一次
   useEffect(() => {
@@ -825,13 +836,13 @@ export default function AdGenerator() {
           if (combinations.length > 0) {
             const firstCombination = combinations[0];
             const currentPlatform = getCurrentPreviewPlatform()
-            generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, firstCombination.ctaText)
+            generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, previewCtaText)
               .catch(err => console.error('拖动后预览更新失败:', err));
           }
         }
       }, 50);
     }
-  }, [draggedText, debounceUpdate, generateAdImage, generateAllCombinations, image, previewPlatform, customSizes]);
+  }, [draggedText, debounceUpdate, generateAdImage, generateAllCombinations, image, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
 
   // 更新handleCanvasMouseDown以支持按钮拖拽
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -1032,13 +1043,25 @@ export default function AdGenerator() {
         const firstCombination = combinations[0];
         const currentPlatform = getCurrentPreviewPlatform()
         console.log("手动刷新预览...");
-        generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, firstCombination.ctaText)
+        generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, previewCtaText)
           .catch(err => console.error('预览刷新失败:', err));
       }
     } catch (error) {
       console.error('手动刷新预览失败:', error);
     }
-  }, [image, canvasRef, generateAllCombinations, generateAdImage, previewPlatform, customSizes]);
+  }, [image, canvasRef, generateAllCombinations, generateAdImage, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
+
+  // 1. 在adTextGroups变化时自动同步previewTextIndexes长度，并确保每组索引不超过当前选项数-1
+  useEffect(() => {
+    setPreviewTextIndexes(prev =>
+      adTextGroups.map((group, idx) => {
+        const options = group.options.filter(opt => opt.trim());
+        const maxIdx = options.length - 1;
+        const safeIdx = Math.max(0, Math.min((prev && prev[idx]) ?? 0, maxIdx));
+        return safeIdx;
+      })
+    );
+  }, [adTextGroups]);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -1671,7 +1694,7 @@ export default function AdGenerator() {
                   {getCurrentPreviewPlatform().width} × {getCurrentPreviewPlatform().height}
                 </span>
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 mb-1">
                 <button
                   onClick={() => setPreviewPlatform('default')}
                   className={`px-2 py-1 text-xs rounded-full border transition-colors ${
@@ -1696,38 +1719,57 @@ export default function AdGenerator() {
                   </button>
                 ))}
               </div>
+              {/* 新增：CTA文案选择器，仅在有多个文案时显示 */}
+              {buttonStyle.textOptions.filter(opt => opt.trim()).length > 1 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  <span className="text-xs text-gray-700 mr-1">CTA:</span>
+                  {buttonStyle.textOptions.filter(opt => opt.trim()).map((cta, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setPreviewCtaIndex(idx)}
+                      className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                        previewCtaIndex === idx
+                          ? 'bg-amber-500 text-white border-amber-500'
+                          : 'bg-white text-gray-600 border-gray-300 hover:bg-amber-50'
+                      }`}
+                    >
+                      {cta || `按钮${idx+1}`}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             
             {image && (
               <>
-                <div 
-                  ref={canvasContainerRef}
+              <div 
+                ref={canvasContainerRef}
                   className="border rounded-lg overflow-hidden relative bg-gray-50"
                   style={{
                     aspectRatio: `${getCurrentPreviewPlatform().width} / ${getCurrentPreviewPlatform().height}`,
                     maxHeight: '700px'
                   }}
-                >
-                  <canvas
-                    ref={canvasRef}
+              >
+                <canvas
+                  ref={canvasRef}
                     className="w-full h-full cursor-move"
                     style={{ 
                       display: 'block',
                       objectFit: 'contain'
                     }}
-                    onMouseDown={handleCanvasMouseDown}
-                    onMouseMove={handleCanvasMouseMove}
-                    onMouseUp={handleCanvasMouseUp}
-                    onMouseLeave={handleCanvasMouseUp}
-                    onMouseOver={handleCanvasMouseOver}
-                  />
+                  onMouseDown={handleCanvasMouseDown}
+                  onMouseMove={handleCanvasMouseMove}
+                  onMouseUp={handleCanvasMouseUp}
+                  onMouseLeave={handleCanvasMouseUp}
+                  onMouseOver={handleCanvasMouseOver}
+                />
                 </div>
                 {/* 预览尺寸提示，移到预览图外部 */}
                 <div className="w-full flex justify-center mt-2">
                   <span className="bg-black text-white text-base rounded-xl px-4 py-1 font-medium shadow">
                     {getCurrentPreviewPlatform().name} ({getCurrentPreviewPlatform().width}×{getCurrentPreviewPlatform().height})
-                  </span>
-                </div>
+                      </span>
+                  </div>
               </>
             )}
             
@@ -1747,10 +1789,10 @@ export default function AdGenerator() {
                             <span className="text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">自定义</span>
                           )}
                         </span>
-                      </div>
+                </div>
                     )
                   })}
-                </div>
+              </div>
               ) : (
                 <p className="text-red-500">⚠️ 请至少选择一个平台</p>
               )}
