@@ -80,6 +80,111 @@ export default function AdGenerator() {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [debounceUpdate, setDebounceUpdate] = useState<{x: number, y: number} | null>(null)
   
+  // 添加尺寸编辑状态
+  const [editingSize, setEditingSize] = useState<string | null>(null)
+  
+  // 添加平台选择状态
+  const [selectedPlatforms, setSelectedPlatforms] = useState<{[key: string]: boolean}>({
+    'Facebook_Square': true,
+    'Facebook_Landscape': true,
+    'Google_Ads_Square': true,
+    'Google_Ads_Landscape': true,
+    'Instagram_Square': true,
+    'Instagram_Story': true,
+    'LinkedIn_Single': true,
+    'Twitter_Post': true
+  })
+  
+  // 添加自定义尺寸状态
+  const [customSizes, setCustomSizes] = useState<{[key: string]: {width: number, height: number}}>({
+    'Facebook_Square': { width: 1080, height: 1080 },
+    'Facebook_Landscape': { width: 1200, height: 630 },
+    'Google_Ads_Square': { width: 1200, height: 1200 },
+    'Google_Ads_Landscape': { width: 1200, height: 628 },
+    'Instagram_Square': { width: 1080, height: 1080 },
+    'Instagram_Story': { width: 1080, height: 1920 },
+    'LinkedIn_Single': { width: 1200, height: 627 },
+    'Twitter_Post': { width: 1200, height: 675 }
+  })
+  
+  // 平台配置
+  const allPlatforms = [
+    { key: 'Facebook_Square', name: 'Facebook 方形', defaultWidth: 1080, defaultHeight: 1080, category: 'Facebook', icon: '📘' },
+    { key: 'Facebook_Landscape', name: 'Facebook 横向', defaultWidth: 1200, defaultHeight: 630, category: 'Facebook', icon: '📘' },
+    { key: 'Google_Ads_Square', name: 'Google Ads 方形', defaultWidth: 1200, defaultHeight: 1200, category: 'Google Ads', icon: '🔍' },
+    { key: 'Google_Ads_Landscape', name: 'Google Ads 横向', defaultWidth: 1200, defaultHeight: 628, category: 'Google Ads', icon: '🔍' },
+    { key: 'Instagram_Square', name: 'Instagram 方形', defaultWidth: 1080, defaultHeight: 1080, category: 'Instagram', icon: '📷' },
+    { key: 'Instagram_Story', name: 'Instagram Story', defaultWidth: 1080, defaultHeight: 1920, category: 'Instagram', icon: '📷' },
+    { key: 'LinkedIn_Single', name: 'LinkedIn 广告', defaultWidth: 1200, defaultHeight: 627, category: 'LinkedIn', icon: '💼' },
+    { key: 'Twitter_Post', name: 'Twitter 广告', defaultWidth: 1200, defaultHeight: 675, category: 'Twitter', icon: '🐦' }
+  ]
+  
+  // 平台选择处理函数
+  const handlePlatformToggle = (platformKey: string) => {
+    setSelectedPlatforms(prev => ({
+      ...prev,
+      [platformKey]: !prev[platformKey]
+    }))
+  }
+  
+  // 自定义尺寸处理函数
+  const handleCustomSizeChange = (platformKey: string, dimension: 'width' | 'height', value: number) => {
+    setCustomSizes(prev => ({
+      ...prev,
+      [platformKey]: {
+        ...prev[platformKey],
+        [dimension]: Math.max(100, Math.min(3000, value)) // 限制在100-3000之间
+      }
+    }))
+  }
+  
+  // 重置尺寸到默认值
+  const handleResetSize = (platformKey: string) => {
+    const platform = allPlatforms.find(p => p.key === platformKey)
+    if (platform) {
+      setCustomSizes(prev => ({
+        ...prev,
+        [platformKey]: { width: platform.defaultWidth, height: platform.defaultHeight }
+      }))
+    }
+  }
+  
+  // 全选/取消全选
+  const handleSelectAll = () => {
+    const allSelected = Object.values(selectedPlatforms).every(v => v)
+    const newSelection = allPlatforms.reduce((acc, platform) => {
+      acc[platform.key] = !allSelected
+      return acc
+    }, {} as {[key: string]: boolean})
+    setSelectedPlatforms(newSelection)
+  }
+  
+  // 获取选中的平台
+  const getSelectedPlatforms = () => {
+    return allPlatforms.filter(platform => selectedPlatforms[platform.key]).map(platform => ({
+      ...platform,
+      width: customSizes[platform.key]?.width || platform.defaultWidth,
+      height: customSizes[platform.key]?.height || platform.defaultHeight
+    }))
+  }
+  
+  // 获取选中的平台数量
+  const getSelectedPlatformCount = () => {
+    return Object.values(selectedPlatforms).filter(v => v).length
+  }
+  
+  // 按平台分组
+  const getPlatformsByCategory = () => {
+    const grouped = allPlatforms.reduce((acc, platform) => {
+      if (!acc[platform.category]) {
+        acc[platform.category] = []
+      }
+      acc[platform.category].push(platform)
+      return acc
+    }, {} as {[key: string]: typeof allPlatforms})
+    return grouped
+  }
+  
   // 使用防抖更新位置
   const debouncedUpdatePosition = useCallback(
     debounce((id: string, x: number, y: number) => {
@@ -559,16 +664,7 @@ export default function AdGenerator() {
       const zip = new JSZip()
       
       // 生成不同平台的广告图片
-      const platforms = [
-        { name: 'Facebook_Square', width: 1080, height: 1080 },
-        { name: 'Facebook_Landscape', width: 1200, height: 630 },
-        { name: 'Google_Ads_Square', width: 1200, height: 1200 },
-        { name: 'Google_Ads_Landscape', width: 1200, height: 628 },
-        { name: 'Instagram_Square', width: 1080, height: 1080 },
-        { name: 'Instagram_Story', width: 1080, height: 1920 },
-        { name: 'LinkedIn_Single', width: 1200, height: 627 },
-        { name: 'Twitter_Post', width: 1200, height: 675 }
-      ]
+      const platforms = getSelectedPlatforms()
 
       let imageCounter = 1
       
@@ -1285,6 +1381,157 @@ export default function AdGenerator() {
             </div>
           </div>
 
+          {/* 平台选择设置 - 美观紧凑版 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">平台选择</h2>
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-gray-500">已选择 {getSelectedPlatformCount()}/8</span>
+                <button
+                  onClick={handleSelectAll}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
+                >
+                  {Object.values(selectedPlatforms).every(v => v) ? '取消全选' : '全选'}
+                </button>
+              </div>
+            </div>
+            
+            {/* 美观的平台选择卡片 */}
+            <div className="grid grid-cols-1 gap-3">
+              {Object.entries(getPlatformsByCategory()).map(([category, platforms]) => (
+                <div key={category} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-sm font-semibold text-gray-800 flex items-center">
+                      {platforms[0].icon} {category}
+                    </h3>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                      {platforms.filter(p => selectedPlatforms[p.key]).length}/{platforms.length}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    {platforms.map(platform => {
+                      const isSelected = selectedPlatforms[platform.key]
+                      const currentSize = customSizes[platform.key]
+                      const isCustomSize = currentSize.width !== platform.defaultWidth || currentSize.height !== platform.defaultHeight
+                      
+                      return (
+                        <div key={platform.key} className={`
+                          border rounded-lg p-2 transition-all duration-200
+                          ${isSelected 
+                            ? 'border-blue-300 bg-blue-50 shadow-sm' 
+                            : 'border-gray-200 bg-white hover:bg-gray-50'
+                          }
+                        `}>
+                          <div className="flex items-center justify-between">
+                            <label className="flex items-center space-x-2 cursor-pointer flex-1">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handlePlatformToggle(platform.key)}
+                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                              />
+                              <span className="text-sm font-medium text-gray-700">{platform.name}</span>
+                            </label>
+                            
+                            <div className="flex items-center space-x-2">
+                              {/* 尺寸显示/编辑 */}
+                              <div className="flex items-center space-x-1">
+                                <span className="text-xs text-gray-500">
+                                  {currentSize.width}×{currentSize.height}
+                                </span>
+                                {isCustomSize && (
+                                  <span className="text-xs text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">自定义</span>
+                                )}
+                              </div>
+                              
+                              {/* 尺寸编辑按钮 */}
+                              <button
+                                onClick={() => setEditingSize(editingSize === platform.key ? null : platform.key)}
+                                className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+                                title="编辑尺寸"
+                              >
+                                ✏️
+                              </button>
+                              
+                              {/* 重置尺寸按钮 */}
+                              {isCustomSize && (
+                                <button
+                                  onClick={() => handleResetSize(platform.key)}
+                                  className="text-xs text-gray-500 hover:text-gray-700 px-1 py-1 rounded hover:bg-gray-100 transition-colors"
+                                  title="重置为默认尺寸"
+                                >
+                                  ↺
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                          
+                          {/* 尺寸编辑区域 */}
+                          {editingSize === platform.key && (
+                            <div className="mt-2 pt-2 border-t border-gray-200 bg-gray-50 rounded p-2">
+                              <div className="flex items-center space-x-2">
+                                <div className="flex items-center space-x-1">
+                                  <label className="text-xs text-gray-600">宽:</label>
+                                  <input
+                                    type="number"
+                                    value={currentSize.width}
+                                    onChange={(e) => handleCustomSizeChange(platform.key, 'width', parseInt(e.target.value) || 100)}
+                                    className="w-16 text-xs border rounded px-1 py-1"
+                                    min="100"
+                                    max="3000"
+                                  />
+                                </div>
+                                <span className="text-xs text-gray-400">×</span>
+                                <div className="flex items-center space-x-1">
+                                  <label className="text-xs text-gray-600">高:</label>
+                                  <input
+                                    type="number"
+                                    value={currentSize.height}
+                                    onChange={(e) => handleCustomSizeChange(platform.key, 'height', parseInt(e.target.value) || 100)}
+                                    className="w-16 text-xs border rounded px-1 py-1"
+                                    min="100"
+                                    max="3000"
+                                  />
+                                </div>
+                                <button
+                                  onClick={() => setEditingSize(null)}
+                                  className="text-xs text-green-600 hover:text-green-800 px-2 py-1 border border-green-200 rounded hover:bg-green-50"
+                                >
+                                  完成
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* 选择统计 */}
+            <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-blue-700">
+                  已选择 <span className="font-semibold">{getSelectedPlatformCount()}</span> 个平台
+                </p>
+                <div className="text-xs text-blue-600">
+                  {getSelectedPlatformCount() > 0 && (
+                    <span>
+                      预计生成 {(() => {
+                        const textCombinations = adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)
+                        const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
+                        return textCombinations * ctaCombinations * getSelectedPlatformCount()
+                      })()} 张图片
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* 组合信息显示 */}
           <div className="bg-blue-50 rounded-lg p-4">
             <h3 className="text-lg font-semibold text-blue-800 mb-2">生成预览</h3>
@@ -1301,15 +1548,15 @@ export default function AdGenerator() {
                 const textCombinations = adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)
                 const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
                 const totalCombinations = textCombinations * ctaCombinations
-                return totalCombinations * 8 // 8个平台
-              })()} (8个平台)</p>
+                return totalCombinations * getSelectedPlatformCount() // 每个平台生成一张图片
+              })()} (共 {getSelectedPlatformCount()} 个平台)</p>
             </div>
           </div>
 
           {/* 生成按钮 */}
           <button
             onClick={handleGenerateAds}
-            disabled={!image || (adTextGroups.length === 0 && buttonStyle.textOptions.every(opt => !opt.trim())) || isGenerating}
+            disabled={!image || (adTextGroups.length === 0 && buttonStyle.textOptions.every(opt => !opt.trim())) || isGenerating || getSelectedPlatformCount() === 0}
             className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isGenerating ? '生成中...' : '生成所有组合的广告图片'}
@@ -1382,11 +1629,28 @@ export default function AdGenerator() {
             )}
             
             <div className="text-sm text-gray-600">
-              <p>✅ Facebook 广告 (方形/横向)</p>
-              <p>✅ Google Ads (方形/横向)</p>
-              <p>✅ Instagram (方形/Story)</p>
-              <p>✅ LinkedIn 广告</p>
-              <p>✅ Twitter 广告</p>
+              {getSelectedPlatformCount() > 0 ? (
+                <div>
+                  <p className="font-medium mb-1">✅ 已选择的平台:</p>
+                  {getSelectedPlatforms().map(platform => {
+                    const currentSize = customSizes[platform.key]
+                    const isCustomSize = currentSize.width !== platform.defaultWidth || currentSize.height !== platform.defaultHeight
+                    return (
+                      <div key={platform.key} className="ml-2 text-xs mb-1">
+                        <span className="flex items-center">
+                          <span>• {platform.name}</span>
+                          <span className="text-gray-500 ml-1">({currentSize.width}×{currentSize.height})</span>
+                          {isCustomSize && (
+                            <span className="text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">自定义</span>
+                          )}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <p className="text-red-500">⚠️ 请至少选择一个平台</p>
+              )}
             </div>
           </div>
         </div>
