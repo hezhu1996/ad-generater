@@ -83,6 +83,9 @@ export default function AdGenerator() {
   // 添加尺寸编辑状态
   const [editingSize, setEditingSize] = useState<string | null>(null)
   
+  // 添加预览平台选择状态
+  const [previewPlatform, setPreviewPlatform] = useState<string>('default')
+  
   // 添加平台选择状态
   const [selectedPlatforms, setSelectedPlatforms] = useState<{[key: string]: boolean}>({
     'Facebook_Square': true,
@@ -183,6 +186,46 @@ export default function AdGenerator() {
       return acc
     }, {} as {[key: string]: typeof allPlatforms})
     return grouped
+  }
+  
+  // 获取当前预览平台信息
+  const getCurrentPreviewPlatform = () => {
+    if (previewPlatform === 'default') {
+      // 默认预览使用第一个选中的平台，或者使用固定尺寸
+      const selectedPlatforms = getSelectedPlatforms()
+      if (selectedPlatforms.length > 0) {
+        return {
+          name: selectedPlatforms[0].name,
+          width: 800,
+          height: 600,
+          isDefault: true
+        }
+      }
+      return {
+        name: '默认预览',
+        width: 800,
+        height: 600,
+        isDefault: true
+      }
+    }
+    
+    const platform = allPlatforms.find(p => p.key === previewPlatform)
+    if (platform) {
+      const currentSize = customSizes[platform.key]
+      return {
+        name: platform.name,
+        width: currentSize.width,
+        height: currentSize.height,
+        isDefault: false
+      }
+    }
+    
+    return {
+      name: '默认预览',
+      width: 800,
+      height: 600,
+      isDefault: true
+    }
   }
   
   // 使用防抖更新位置
@@ -417,13 +460,22 @@ export default function AdGenerator() {
       text: ctaText,
       size: buttonStyle.size || 1
     });
+    console.log("画布尺寸:", { width, height });
 
     return new Promise<string>((resolve) => {
       const canvas = canvasRef.current!
       const ctx = canvas.getContext('2d')!
       
+      // 设置canvas的实际尺寸
       canvas.width = width
       canvas.height = height
+      
+      // 设置canvas的CSS尺寸，确保显示正确
+      canvas.style.width = '100%'
+      canvas.style.height = '100%'
+      
+      console.log("Canvas实际尺寸:", { width: canvas.width, height: canvas.height });
+      console.log("Canvas CSS尺寸:", { width: canvas.style.width, height: canvas.style.height });
 
       const img = new Image()
       img.onload = () => {
@@ -432,11 +484,47 @@ export default function AdGenerator() {
         ctx.fillRect(0, 0, width, height)
         
         // 计算图片位置，保持比例并居中
-        const scale = Math.min(width / img.width, height / img.height)
-        const scaledWidth = img.width * scale
-        const scaledHeight = img.height * scale
-        const x = (width - scaledWidth) / 2
-        const y = (height - scaledHeight) / 2
+        // 使用更精确的缩放计算，确保图片不会变形
+        const imgAspectRatio = img.width / img.height
+        const canvasAspectRatio = width / height
+        
+        let scaledWidth, scaledHeight, x, y
+        
+        if (imgAspectRatio > canvasAspectRatio) {
+          // 图片更宽，以宽度为准
+          scaledWidth = width * 0.8 // 留出一些边距
+          scaledHeight = scaledWidth / imgAspectRatio
+          x = (width - scaledWidth) / 2
+          y = (height - scaledHeight) / 2
+        } else {
+          // 图片更高，以高度为准
+          scaledHeight = height * 0.6 // 为文字和按钮留出空间
+          scaledWidth = scaledHeight * imgAspectRatio
+          x = (width - scaledWidth) / 2
+          y = (height - scaledHeight) / 2
+        }
+        
+        // 确保图片不会超出画布边界
+        if (scaledWidth > width) {
+          scaledWidth = width * 0.8
+          scaledHeight = scaledWidth / imgAspectRatio
+          x = (width - scaledWidth) / 2
+          y = (height - scaledHeight) / 2
+        }
+        
+        if (scaledHeight > height * 0.7) { // 为文字和按钮保留30%的空间
+          scaledHeight = height * 0.6
+          scaledWidth = scaledHeight * imgAspectRatio
+          x = (width - scaledWidth) / 2
+          y = (height - scaledHeight) / 2
+        }
+        
+        console.log("图片绘制参数:", {
+          originalSize: { width: img.width, height: img.height },
+          scaledSize: { width: scaledWidth, height: scaledHeight },
+          position: { x, y },
+          canvasSize: { width, height }
+        });
         
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight)
 
@@ -710,7 +798,8 @@ export default function AdGenerator() {
         const combinations = generateAllCombinations();
         if (combinations.length > 0) {
           const firstCombination = combinations[0];
-          await generateAdImage(800, 600, 'png', firstCombination.texts, firstCombination.ctaText);
+          const currentPlatform = getCurrentPreviewPlatform()
+          await generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, firstCombination.ctaText);
         }
       } catch (error) {
         console.error('预览更新失败:', error);
@@ -721,7 +810,7 @@ export default function AdGenerator() {
     if (!draggedText && !draggedButton) {
       updatePreview();
     }
-  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton]);
+  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes]);
 
   // 确保在拖动结束后正确更新一次
   useEffect(() => {
@@ -735,13 +824,14 @@ export default function AdGenerator() {
           const combinations = generateAllCombinations();
           if (combinations.length > 0) {
             const firstCombination = combinations[0];
-            generateAdImage(800, 600, 'png', firstCombination.texts, firstCombination.ctaText)
+            const currentPlatform = getCurrentPreviewPlatform()
+            generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, firstCombination.ctaText)
               .catch(err => console.error('拖动后预览更新失败:', err));
           }
         }
       }, 50);
     }
-  }, [draggedText, debounceUpdate, generateAdImage, generateAllCombinations, image]);
+  }, [draggedText, debounceUpdate, generateAdImage, generateAllCombinations, image, previewPlatform, customSizes]);
 
   // 更新handleCanvasMouseDown以支持按钮拖拽
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -940,20 +1030,21 @@ export default function AdGenerator() {
       const combinations = generateAllCombinations();
       if (combinations.length > 0) {
         const firstCombination = combinations[0];
+        const currentPlatform = getCurrentPreviewPlatform()
         console.log("手动刷新预览...");
-        generateAdImage(800, 600, 'png', firstCombination.texts, firstCombination.ctaText)
+        generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, firstCombination.ctaText)
           .catch(err => console.error('预览刷新失败:', err));
       }
     } catch (error) {
       console.error('手动刷新预览失败:', error);
     }
-  }, [image, canvasRef, generateAllCombinations, generateAdImage]);
+  }, [image, canvasRef, generateAllCombinations, generateAdImage, previewPlatform, customSizes]);
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
         {/* 左侧控制面板 */}
-        <div className="space-y-6">
+        <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           {/* 图片上传 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-4 text-gray-800">上传产品图片</h2>
@@ -1564,68 +1655,80 @@ export default function AdGenerator() {
         </div>
 
         {/* 右侧预览 */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4 text-gray-800">预览</h2>
-          <div className="space-y-4">
-            {image && (
-              <div 
-                ref={canvasContainerRef}
-                className="border rounded-lg overflow-hidden relative"
-              >
-                <canvas
-                  ref={canvasRef}
-                  className="w-full h-auto cursor-move"
-                  style={{ maxHeight: '400px' }}
-                  onMouseDown={handleCanvasMouseDown}
-                  onMouseMove={handleCanvasMouseMove}
-                  onMouseUp={handleCanvasMouseUp}
-                  onMouseLeave={handleCanvasMouseUp}
-                  onMouseOver={handleCanvasMouseOver}
-                />
-                
-                {/* 添加刷新预览按钮 */}
-                <button
-                  onClick={refreshPreview}
-                  className="absolute top-2 right-2 bg-blue-500 text-white p-2 rounded-full shadow-md hover:bg-blue-600"
-                  title="刷新预览"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
-                
-                {(adTextGroups.filter(g => g.position === 'custom').length > 0 || true) && (
-                  <div className="mt-2 text-xs text-gray-500 text-center">
-                    提示: 点击并拖动预览区域可调整自定义文字和按钮位置
-                    {(draggedText || draggedButton) && (
-                      <span className="ml-1 font-medium text-blue-600">
-                        (正在移动{draggedButton ? 'CTA按钮' : '文字'}...)
-                      </span>
-                    )}
-                  </div>
-                )}
-                
-                {adTextGroups.some(group => group.position === 'custom') && (
-                  <div className="mt-1 text-xs bg-blue-50 text-blue-700 p-2 rounded">
-                    <p className="font-medium">自定义位置文字指南:</p>
-                    <ul className="list-disc pl-4 mt-1">
-                      <li>选择"自定义"位置后，文字会显示在预览中</li>
-                      <li>使用滑块可精确调整X和Y位置</li>
-                      <li>也可以直接在预览中<strong>点击并拖动文字</strong></li>
-                      <li>多个自定义文字可分别调整到不同位置</li>
-                    </ul>
-                  </div>
-                )}
-                
-                <div className="mt-1 text-xs bg-amber-50 text-amber-700 p-2 rounded">
-                  <p className="font-medium">CTA按钮指南:</p>
-                  <ul className="list-disc pl-4 mt-1">
-                    <li>点击并拖动可自由定位按钮</li>
-                    <li>使用滑块可精确设置按钮位置</li>
-                    <li>按钮会在所有画布尺寸上保持相对位置</li>
-                  </ul>
-                </div>
+        <div className="bg-white rounded-lg shadow-md p-4 sticky top-4 h-fit max-h-[calc(100vh-1rem)] overflow-y-auto preview-scrollbar">
+          <h2 className="text-xl font-bold mb-4 text-gray-800 sticky top-0 bg-white pb-2 z-10 border-b border-gray-200 flex items-center justify-between">
+            <span>预览</span>
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full flex items-center">
+              📌 跟随滚动
+            </span>
+          </h2>
+          <div className="space-y-3">
+            {/* 预览平台选择器 */}
+            <div className="bg-gray-50 rounded-lg p-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">预览平台:</span>
+                <span className="text-xs text-gray-500">
+                  {getCurrentPreviewPlatform().width} × {getCurrentPreviewPlatform().height}
+                </span>
               </div>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  onClick={() => setPreviewPlatform('default')}
+                  className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                    previewPlatform === 'default'
+                      ? 'bg-blue-500 text-white border-blue-500'
+                      : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  默认预览
+                </button>
+                {getSelectedPlatforms().map(platform => (
+                  <button
+                    key={platform.key}
+                    onClick={() => setPreviewPlatform(platform.key)}
+                    className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                      previewPlatform === platform.key
+                        ? 'bg-blue-500 text-white border-blue-500'
+                        : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {platform.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            {image && (
+              <>
+                <div 
+                  ref={canvasContainerRef}
+                  className="border rounded-lg overflow-hidden relative bg-gray-50"
+                  style={{
+                    aspectRatio: `${getCurrentPreviewPlatform().width} / ${getCurrentPreviewPlatform().height}`,
+                    maxHeight: '700px'
+                  }}
+                >
+                  <canvas
+                    ref={canvasRef}
+                    className="w-full h-full cursor-move"
+                    style={{ 
+                      display: 'block',
+                      objectFit: 'contain'
+                    }}
+                    onMouseDown={handleCanvasMouseDown}
+                    onMouseMove={handleCanvasMouseMove}
+                    onMouseUp={handleCanvasMouseUp}
+                    onMouseLeave={handleCanvasMouseUp}
+                    onMouseOver={handleCanvasMouseOver}
+                  />
+                </div>
+                {/* 预览尺寸提示，移到预览图外部 */}
+                <div className="w-full flex justify-center mt-2">
+                  <span className="bg-black text-white text-base rounded-xl px-4 py-1 font-medium shadow">
+                    {getCurrentPreviewPlatform().name} ({getCurrentPreviewPlatform().width}×{getCurrentPreviewPlatform().height})
+                  </span>
+                </div>
+              </>
             )}
             
             <div className="text-sm text-gray-600">
@@ -1636,7 +1739,7 @@ export default function AdGenerator() {
                     const currentSize = customSizes[platform.key]
                     const isCustomSize = currentSize.width !== platform.defaultWidth || currentSize.height !== platform.defaultHeight
                     return (
-                      <div key={platform.key} className="ml-2 text-xs mb-1">
+                      <div key={platform.key} className="ml-2 text-xs mb-0.5">
                         <span className="flex items-center">
                           <span>• {platform.name}</span>
                           <span className="text-gray-500 ml-1">({currentSize.width}×{currentSize.height})</span>
