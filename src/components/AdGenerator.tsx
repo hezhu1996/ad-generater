@@ -1,73 +1,88 @@
 'use client'
 
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import { HexColorPicker } from 'react-colorful'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { useTranslation } from 'react-i18next'
+import { ButtonStyle, AdText, AdTextGroup, ImageScaleSettings } from '../types/adTypes'
+import { buttonTemplates, combinedTemplates } from '../data/buttonTemplates'
 
-// 添加防抖功能
 function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
-  let timeout: NodeJS.Timeout | null = null;
+  let timeout: ReturnType<typeof setTimeout> | null = null
   
-  return function(...args: Parameters<T>): void {
+  return function(...args: Parameters<T>) {
     const later = () => {
-      timeout = null;
-      func(...args);
-    };
+      timeout = null
+      func(...args)
+    }
     
-    if (timeout) clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
-
-interface AdText {
-  id: string
-  text: string
-  color: string
-  position: 'top' | 'bottom' | 'custom'
-  font: string
-  x?: number // 自定义位置的X坐标
-  y?: number // 自定义位置的Y坐标
-  size?: number // 文字大小比例，默认为1
-}
-
-interface AdTextGroup {
-  id: string
-  options: string[] // 多个文字选项
-  color: string
-  position: 'top' | 'bottom' | 'custom'
-  font: string
-  x?: number // 自定义位置的X坐标
-  y?: number // 自定义位置的Y坐标
-  size?: number // 文字大小比例，默认为1
-}
-
-interface ButtonStyle {
-  backgroundColor: string
-  textColor: string
-  borderRadius: string
-  padding: string
-  textOptions: string[] // 改为多个文字选项
-  font: string
-  x?: number // 按钮X位置（百分比）
-  y?: number // 按钮Y位置（百分比）
-  size?: number // 按钮大小比例，默认为1
-}
-
-// 添加图片比例设置接口
-interface ImageScaleSettings {
-  mode: 'auto' | 'custom'; // 自动或自定义模式
-  widthRatio: number;      // 宽度比例 (0-1)
-  heightRatio: number;     // 高度比例 (0-1)
-  aspectRatio: string;     // 宽高比 (例如 "4:3", "16:9")
+    if (timeout !== null) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(later, wait)
+  }
 }
 
 export default function AdGenerator() {
   const { t, i18n } = useTranslation();
+  
+  // 实用函数：检测文字是否包含中文
+  const containsChinese = (text: string) => /[\u4e00-\u9fa5]/.test(text);
+  // 实用函数：检测文字是否包含英文
+  const containsEnglish = (text: string) => /[a-zA-Z]/.test(text);
+  
+  // 获取模板的英文名称
+  const getEnglishTemplateName = (chineseName: string): string => {
+    const templateNameMap: {[key: string]: string} = {
+      '简约风格': 'Minimalist Style',
+      '黑色极简': 'Black Minimal',
+      '促销风格': 'Promotional Style',
+      '清新风格': 'Fresh Style',
+      '高端风格': 'Premium Style',
+      '时尚风格': 'Fashion Style',
+      '珠宝风格': 'Jewelry Style',
+      '科技风格': 'Tech Style',
+      '美妆风格': 'Beauty Style',
+      '家居风格': 'Home Style',
+      '食品风格': 'Food Style',
+      '旅行风格': 'Travel Style',
+      '运动风格': 'Sports Style',
+      '电子产品风格': 'Electronics Style',
+      '儿童产品风格': 'Kids Style',
+      '书籍风格': 'Book Style',
+      '音乐风格': 'Music Style',
+      '艺术风格': 'Art Style',
+      '健康风格': 'Health Style',
+      '奢华风格': 'Luxury Style'
+    };
+    
+    return templateNameMap[chineseName] || chineseName;
+  };
+  
+  // 实用函数：根据当前语言过滤文字选项
+  const filterTextOptionsByLanguage = useCallback((options: string[]): string[] => {
+    const isEnglish = i18n.language === 'en';
+    const filtered = options.filter(option => {
+      if (isEnglish) {
+        // 英文模式：保留英文文字选项
+        return containsEnglish(option) && !containsChinese(option);
+      } else {
+        // 中文模式：保留中文文字选项
+        return containsChinese(option);
+      }
+    });
+    
+    // 如果过滤后没有选项，则添加默认文本
+    if (filtered.length === 0) {
+      filtered.push(isEnglish ? 'Buy Now' : '立即购买');
+    }
+    
+    return filtered;
+  }, [i18n.language]);
   
   const [images, setImages] = useState<string[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
@@ -93,18 +108,30 @@ export default function AdGenerator() {
   
   // 当语言变化时更新按钮文字
   useEffect(() => {
-    // 保存用户自定义的文字选项
-    const userOptions = buttonStyle.textOptions;
+    // 应用语言过滤到当前按钮文字选项
+    const currentOptions = buttonStyle.textOptions;
     
-    // 如果当前选项只有一个且是默认值，则根据语言更新
-    if (userOptions.length === 1 && 
-        (userOptions[0] === '立即购买' || userOptions[0] === 'Buy Now')) {
+    // 如果当前只有一个选项且是默认值，则更新为当前语言的默认值
+    if (currentOptions.length === 1 && 
+        (currentOptions[0] === '立即购买' || currentOptions[0] === 'Buy Now')) {
       setButtonStyle(prev => ({
         ...prev,
         textOptions: [i18n.language === 'en' ? 'Buy Now' : '立即购买']
       }));
     }
-  }, [i18n.language]);
+    // 否则，应用语言过滤逻辑
+    else {
+      const filteredOptions = filterTextOptionsByLanguage(currentOptions);
+      
+      // 如果过滤后的选项与当前选项不同，则更新
+      if (JSON.stringify(filteredOptions) !== JSON.stringify(currentOptions)) {
+        setButtonStyle(prev => ({
+          ...prev,
+          textOptions: filteredOptions
+        }));
+      }
+    }
+  }, [i18n.language, filterTextOptionsByLanguage]);
   
   const [isGenerating, setIsGenerating] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null)
@@ -136,8 +163,8 @@ export default function AdGenerator() {
   // 添加预览平台选择状态
   const [previewPlatform, setPreviewPlatform] = useState<string>('default')
   
-  // 平台配置
-  const allPlatforms = [
+  // 平台配置 - 使用useMemo避免重复创建
+  const allPlatforms = useMemo(() => [
     // Facebook
     { key: 'Facebook_Square', name: `Facebook ${t('方形')}`, defaultWidth: 1080, defaultHeight: 1080, category: 'Facebook', icon: '📘' },
     { key: 'Facebook_Landscape', name: `Facebook ${t('横向')}`, defaultWidth: 1200, defaultHeight: 630, category: 'Facebook', icon: '📘' },
@@ -181,17 +208,29 @@ export default function AdGenerator() {
     { key: 'Etsy_Square', name: `Etsy ${t('商品主图')}`, defaultWidth: 1000, defaultHeight: 1000, category: 'Etsy', icon: '🛍️' },
     { key: 'Etsy_Banner', name: `Etsy ${t('店铺横幅')}`, defaultWidth: 1200, defaultHeight: 300, category: 'Etsy', icon: '🛍️' },
     { key: 'Etsy_Promo', name: `Etsy ${t('促销图')}`, defaultWidth: 1200, defaultHeight: 628, category: 'Etsy', icon: '🛍️' }
-  ]
+  ], [t]);
   
   // 添加平台选择状态 - 默认全选
   const [selectedPlatforms, setSelectedPlatforms] = useState<{[key: string]: boolean}>(() => {
     // 创建包含所有平台的初始状态，全部设为true
     const initialState: Record<string, boolean> = {};
-    allPlatforms.forEach(platform => {
-      initialState[platform.key] = true;
+    // 使用硬编码平台列表来避免依赖allPlatforms
+    const platformKeys = [
+      'Facebook_Square', 'Facebook_Landscape', 
+      'Google_Ads_Square', 'Google_Ads_Landscape', 
+      'Instagram_Square', 'Instagram_Story', 
+      'LinkedIn_Single', 'Twitter_Post',
+      'Amazon_Mobile', 'Amazon_Desktop', 'Amazon_Banner',
+      'eBay_Standard', 'eBay_Billboard', 'eBay_Mobile',
+      'TikTok_Feed', 'TikTok_Splash', 'TikTok_Display',
+      'Reddit_Feed', 'Reddit_Card', 'Reddit_Mobile',
+      'Etsy_Square', 'Etsy_Banner', 'Etsy_Promo'
+    ];
+    platformKeys.forEach(key => {
+      initialState[key] = true;
     });
     return initialState;
-  })
+  });
   
   // 添加自定义尺寸状态
   const [customSizes, setCustomSizes] = useState<{[key: string]: {width: number, height: number}}>({
@@ -504,7 +543,7 @@ export default function AdGenerator() {
     })
   }
 
-  const drawBottomTexts = (ctx: CanvasRenderingContext2D, width: number, height: number, texts: AdText[], imageHeight: number, ctaButtonText: string, ctaButtonStyle: ButtonStyle) => {
+  const drawBottomTexts = (ctx: CanvasRenderingContext2D, width: number, height: number, texts: AdText[], imageHeight: number) => {
     // 计算图片实际占用的高度
     const startY = imageHeight + 20 // 在图片下方留20px间距
 
@@ -537,46 +576,6 @@ export default function AdGenerator() {
         ctx.fillText(text.text, xPosition, yPosition)
       }
     })
-
-    // 绘制CTA按钮（如果有文字） - 使用传入的文字参数
-    if (ctaButtonText.trim()) {
-      console.log('正在绘制CTA按钮:', ctaButtonText)
-      
-      // 设置按钮样式
-      ctx.font = `bold ${Math.max(width * 0.035, 18)}px ${ctaButtonStyle.font}`
-      const textMetrics = ctx.measureText(ctaButtonText)
-      const textWidth = textMetrics.width
-      const textHeight = Math.max(width * 0.035, 18)
-      
-      const buttonPadding = 12
-      const buttonWidth = textWidth + (buttonPadding * 2)
-      const buttonHeight = textHeight + (buttonPadding * 1.5)
-      
-      // 按钮位置：在所有文字下方，距离底部至少50px
-      const buttonX = (width - buttonWidth) / 2
-      const buttonY = Math.min(currentY + 20, height - buttonHeight - 50)
-      
-      console.log('按钮绘制位置:', { buttonX, buttonY, buttonWidth, buttonHeight, canvasHeight: height })
-      
-      // 绘制按钮背景（圆角矩形）
-      const radiusValue = ctaButtonStyle.borderRadius.replace('px', '') // 移除 px 单位
-      const radius = parseInt(radiusValue) || 8
-      ctx.fillStyle = ctaButtonStyle.backgroundColor
-      drawRoundedRect(ctx, buttonX, buttonY, buttonWidth, buttonHeight, radius)
-      ctx.fill()
-      
-      console.log('圆角半径:', radius, '原始值:', ctaButtonStyle.borderRadius, '背景色:', ctaButtonStyle.backgroundColor)
-      
-      // 绘制按钮文字
-      ctx.fillStyle = ctaButtonStyle.textColor
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(ctaButtonText, width / 2, buttonY + buttonHeight / 2)
-      
-      console.log('CTA按钮绘制完成')
-    } else {
-      console.log('CTA按钮文字为空，不绘制按钮')
-    }
   }
 
   const generateAdImage = useCallback(async (width: number, height: number, format: string, textCombination: AdText[], ctaText: string, imageIndex?: number) => {
@@ -696,7 +695,8 @@ export default function AdGenerator() {
         }
         
         if (bottomTexts.length > 0) {
-          drawBottomTexts(ctx, width, height, bottomTexts, y + scaledHeight, ctaText, buttonStyle);
+          // 修改调用方式，不再传递CTA按钮相关参数
+          drawBottomTexts(ctx, width, height, bottomTexts, y + scaledHeight);
         }
         
         // 最后单独绘制自定义位置文字，确保它们总是显示在最上层
@@ -722,7 +722,7 @@ export default function AdGenerator() {
               ctx.fillText(text.text, xPosition, yPosition)
               
               // 在预览状态下，为拖动中的文字添加视觉指示
-              if (draggedText === text.id.split('_')[0]) {
+              if (text.id && draggedText === text.id.split('_')[0]) {
                 ctx.beginPath();
                 ctx.arc(xPosition, yPosition + 10, 5, 0, Math.PI * 2);
                 ctx.fillStyle = '#3b82f6';
@@ -804,7 +804,7 @@ export default function AdGenerator() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(ctaButtonText, buttonX + buttonWidth / 2, buttonY + buttonHeight / 2);
-
+    
     // 添加拖拽指示（如果正在拖拽）
     if (draggedButton) {
       ctx.strokeStyle = '#f59e0b'; // 使用琥珀色作为CTA按钮的选中指示
@@ -1612,6 +1612,191 @@ export default function AdGenerator() {
           {/* 按钮样式设置 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-4 text-gray-800">{t('CTA Button Style')}</h2>
+            
+            {/* 添加模板选择 */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2 text-gray-700">{t('Button Templates')}</label>
+              <div className="grid grid-cols-2 gap-2">
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const templateIndex = parseInt(e.target.value);
+                    if (!isNaN(templateIndex) && buttonTemplates[templateIndex]) {
+                      // 获取按钮模板副本
+                      const buttonTemplateCopy = { ...buttonTemplates[templateIndex] };
+                      
+                      // 使用工具函数过滤文本选项
+                      const filteredTextOptions = filterTextOptionsByLanguage(buttonTemplateCopy.textOptions);
+                      
+                      setButtonStyle({
+                        ...buttonTemplateCopy,
+                        textOptions: filteredTextOptions,
+                        x: buttonStyle.x,
+                        y: buttonStyle.y
+                      });
+                    }
+                    e.target.value = ""; // 重置选择
+                  }}
+                  className="border rounded px-3 py-2 text-gray-800 mb-2"
+                >
+                  <option value="" disabled>{i18n.language === 'en' ? 'Select Button Template' : '选择按钮模板'}</option>
+                  {buttonTemplates.map((template, index) => (
+                    <option key={index} value={index}>
+                      {i18n.language === 'en' ? `Button Template ${index + 1}` : `按钮模板 ${index + 1}`}
+                    </option>
+                  ))}
+                </select>
+                
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const templateIndex = parseInt(e.target.value);
+                    if (!isNaN(templateIndex) && combinedTemplates[templateIndex]) {
+                      // 应用组合模板
+                      const template = combinedTemplates[templateIndex];
+                      
+                      // 获取按钮样式并根据当前语言过滤文本选项
+                      const buttonStyleCopy = { ...template.buttonStyle };
+                      
+                      // 使用工具函数过滤文本选项
+                      const filteredTextOptions = filterTextOptionsByLanguage(buttonStyleCopy.textOptions);
+                      
+                      // 确保至少有一个文本选项
+                      if (filteredTextOptions.length === 0) {
+                        filteredTextOptions.push(i18n.language === 'en' ? 'Explore' : '立即探索');
+                      }
+                      
+                      // 应用按钮样式
+                      setButtonStyle({
+                        ...buttonStyleCopy,
+                        textOptions: filteredTextOptions,
+                        x: buttonStyle.x,
+                        y: buttonStyle.y
+                      });
+                      
+                      // 应用文字样式 - 创建新的文字组
+                      const newGroups = template.textStyles.map((textStyle, idx) => {
+                        // 根据当前语言环境过滤文字
+                        let text = textStyle.text;
+                        const isEnglish = i18n.language === 'en';
+                        
+                        // 如果是英文环境但文字是中文，或是中文环境但文字是英文，则转换
+                        if (isEnglish && containsChinese(text) && !containsEnglish(text)) {
+                          // 为中文文本提供英文替代文本
+                          const englishAlternatives: {[key: string]: string} = {
+                            '精选好物': 'Selected Products',
+                            '限时特惠': 'Limited Time Offer',
+                            '全新系列': 'New Collection',
+                            '春季新品': 'Spring New Arrivals',
+                            '尊享系列': 'Premium Collection',
+                            '智能科技': 'Smart Technology',
+                            '焕新美肌': 'Renewed Skin',
+                            '舒适家居': 'Comfortable Home',
+                            '美食臻选': 'Gourmet Selection',
+                            '探索世界': 'Explore the World',
+                            '专业运动': 'Professional Sports',
+                            '快乐童年': 'Happy Childhood',
+                            '阅读之美': 'Beauty of Reading',
+                            '音乐盛宴': 'Music Feast',
+                            '艺术臻品': 'Art Collection',
+                            '健康生活': 'Healthy Living',
+                            '奢华体验': 'Luxury Experience',
+                            '品质保证 · 限时优惠': 'Quality Guaranteed · Limited Offer',
+                            '折扣高达50%': 'Up to 50% Off',
+                            '舒适自然 · 品质生活': 'Comfort & Quality',
+                            '匠心工艺 · 品质非凡': 'Exquisite Craftsmanship',
+                            '改变生活 · 引领未来': 'Change Life · Lead Future',
+                            '自然呵护 · 绽放光彩': 'Natural Care · Shine Bright',
+                            '品质生活 · 从家开始': 'Quality Life · Starts at Home',
+                            '新鲜食材 · 健康生活': 'Fresh Food · Healthy Life',
+                            '开启旅程 · 发现未知': 'Start Journey · Discover Unknown',
+                            '突破极限 · 挑战自我': 'Break Limits · Challenge Yourself',
+                            '创新体验 · 品质生活': 'Innovative Experience',
+                            '安全呵护 · 健康成长': 'Safe Care · Healthy Growth',
+                            '知识探索 · 心灵成长': 'Knowledge · Mind Growth',
+                            '沉浸体验 · 畅享音乐': 'Immersive Experience',
+                            '独特创意 · 艺术生活': 'Creative Art Life',
+                            '自然呵护 · 品质保障': 'Natural Care · Quality',
+                            '尊贵品质 · 非凡体验': 'Premium Quality'
+                          };
+                          text = englishAlternatives[text] || text;
+                        } else if (!isEnglish && containsEnglish(text) && !containsChinese(text)) {
+                          // 为英文文本提供中文替代文本
+                          const chineseAlternatives: {[key: string]: string} = {
+                            'NEW COLLECTION': '新品系列',
+                            'Premium Quality': '优质保证',
+                            'FASHION': '时尚潮流',
+                            'NEW COLLECTION 2024': '2024新品系列'
+                          };
+                          text = chineseAlternatives[text] || text;
+                        }
+                        
+                        // 将所有文字组都设置为自定义位置，以便可以拖动
+                        let position: 'top' | 'bottom' | 'custom' = 'custom';
+                        let x = textStyle.x;
+                        let y = textStyle.y;
+                        
+                        // 如果原来是top或bottom位置，提供默认的x,y坐标
+                        if (textStyle.position === 'top') {
+                          x = x || 50; // 居中
+                          y = y || 25; // 顶部位置
+                        } else if (textStyle.position === 'bottom') {
+                          x = x || 50; // 居中
+                          y = y || 90; // 底部位置
+                        } else {
+                          x = x || 50; // 默认居中
+                          y = y || 50; // 默认居中
+                        }
+                        
+                        return {
+                          id: `template_${templateIndex}_${idx}_${Date.now()}`,
+                          options: [text],
+                          color: textStyle.color,
+                          position: position, // 设为自定义位置以支持拖动
+                          font: textStyle.font,
+                          x: x,
+                          y: y,
+                          size: textStyle.size
+                        };
+                      });
+                      
+                      // 添加新的文字组
+                      setAdTextGroups(newGroups);
+                      
+                      // 重置预览索引
+                      setPreviewCtaIndex(0);
+                      setPreviewTextIndexes([]);
+                    }
+                    e.target.value = ""; // 重置选择
+                  }}
+                  className="border rounded px-3 py-2 text-gray-800 mb-2"
+                >
+                  <option value="" disabled>{i18n.language === 'en' ? 'Select Template Style' : '选择组合模板'}</option>
+                  {combinedTemplates.map((template, index) => (
+                    <option key={index} value={index}>
+                      {i18n.language === 'en' ? getEnglishTemplateName(template.name) : template.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              {/* 显示当前模板预览 */}
+              <div className="flex items-center justify-center p-3 border rounded-lg bg-gray-50 mb-2">
+                <div 
+                  className="px-4 py-2 text-center"
+                  style={{
+                    backgroundColor: buttonStyle.backgroundColor, 
+                    color: buttonStyle.textColor,
+                    borderRadius: buttonStyle.borderRadius,
+                    fontFamily: buttonStyle.font,
+                    transform: `scale(${buttonStyle.size || 1})` 
+                  }}
+                >
+                  {buttonStyle.textOptions[0] || t('Button Text')}
+                </div>
+              </div>
+            </div>
+            
             <div className="space-y-4">
               {/* CTA 文字选项 */}
               <div>

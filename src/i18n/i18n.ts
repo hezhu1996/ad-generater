@@ -11,6 +11,12 @@ const zhResources = {
     '批量广告图片生成器': '批量广告图片生成器',
     '上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片': '上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片',
     
+    // 新增模板相关翻译
+    'Button Templates': '按钮模板',
+    '选择按钮模板': '选择按钮模板',
+    '选择组合模板': '选择组合模板',
+    '按钮模板': '按钮模板',
+    
     // 页面标题
     'Upload Product Images': '上传产品图片',
     'Ad Text Groups': '广告文字组',
@@ -163,6 +169,12 @@ const enResources = {
     // 页面标题和描述
     '批量广告图片生成器': 'Bulk Ad Image Generator',
     '上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片': 'Upload your product images, add custom text and button styles, and generate professional ADs and A/B test images for multiple platforms with one click',
+    
+    // 新增模板相关翻译
+    'Button Templates': 'Button Templates',
+    '选择按钮模板': 'Select Button Template',
+    '选择组合模板': 'Select Combined Template',
+    '按钮模板': 'Button Template',
     
     // 页面标题
     'Upload Product Images': 'Upload Product Images',
