@@ -287,7 +287,7 @@ export default function AdGenerator() {
     if (previewPlatform === 'default') {
       // 默认预览使用固定尺寸和名称
       return {
-        name: '默认预览',
+        name: t('默认预览'),
         width: 800,
         height: 600,
         isDefault: true
@@ -306,7 +306,7 @@ export default function AdGenerator() {
     }
     
     return {
-      name: '默认预览',
+      name: t('默认预览'),
       width: 800,
       height: 600,
       isDefault: true
