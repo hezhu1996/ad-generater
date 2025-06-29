@@ -103,6 +103,7 @@ export default function AdGenerator() {
   
   // 添加平台选择状态
   const [selectedPlatforms, setSelectedPlatforms] = useState<{[key: string]: boolean}>({
+    // 基础平台
     'Facebook_Square': true,
     'Facebook_Landscape': true,
     'Google_Ads_Square': true,
@@ -110,11 +111,26 @@ export default function AdGenerator() {
     'Instagram_Square': true,
     'Instagram_Story': true,
     'LinkedIn_Single': true,
-    'Twitter_Post': true
+    'Twitter_Post': true,
+    
+    // 新增电商平台 - 默认不选中
+    'Amazon_Mobile': false,
+    'Amazon_Desktop': false,
+    'Amazon_Banner': false,
+    'eBay_Standard': false,
+    'eBay_Billboard': false,
+    'eBay_Mobile': false,
+    'TikTok_Feed': false,
+    'TikTok_Splash': false,
+    'TikTok_Display': false,
+    'Reddit_Feed': false,
+    'Reddit_Card': false,
+    'Reddit_Mobile': false
   })
   
   // 添加自定义尺寸状态
   const [customSizes, setCustomSizes] = useState<{[key: string]: {width: number, height: number}}>({
+    // 基础平台
     'Facebook_Square': { width: 1080, height: 1080 },
     'Facebook_Landscape': { width: 1200, height: 630 },
     'Google_Ads_Square': { width: 1200, height: 1200 },
@@ -122,19 +138,68 @@ export default function AdGenerator() {
     'Instagram_Square': { width: 1080, height: 1080 },
     'Instagram_Story': { width: 1080, height: 1920 },
     'LinkedIn_Single': { width: 1200, height: 627 },
-    'Twitter_Post': { width: 1200, height: 675 }
+    'Twitter_Post': { width: 1200, height: 675 },
+    
+    // Amazon
+    'Amazon_Mobile': { width: 600, height: 500 },
+    'Amazon_Desktop': { width: 1000, height: 500 },
+    'Amazon_Banner': { width: 1500, height: 300 },
+    
+    // eBay
+    'eBay_Standard': { width: 900, height: 900 },
+    'eBay_Billboard': { width: 1200, height: 270 },
+    'eBay_Mobile': { width: 660, height: 440 },
+    
+    // TikTok
+    'TikTok_Feed': { width: 1080, height: 1920 },
+    'TikTok_Splash': { width: 1080, height: 1920 },
+    'TikTok_Display': { width: 1200, height: 628 },
+    
+    // Reddit
+    'Reddit_Feed': { width: 1200, height: 628 },
+    'Reddit_Card': { width: 400, height: 300 },
+    'Reddit_Mobile': { width: 640, height: 640 }
   })
   
   // 平台配置
   const allPlatforms = [
+    // Facebook
     { key: 'Facebook_Square', name: 'Facebook 方形', defaultWidth: 1080, defaultHeight: 1080, category: 'Facebook', icon: '📘' },
     { key: 'Facebook_Landscape', name: 'Facebook 横向', defaultWidth: 1200, defaultHeight: 630, category: 'Facebook', icon: '📘' },
+    
+    // Google Ads
     { key: 'Google_Ads_Square', name: 'Google Ads 方形', defaultWidth: 1200, defaultHeight: 1200, category: 'Google Ads', icon: '🔍' },
     { key: 'Google_Ads_Landscape', name: 'Google Ads 横向', defaultWidth: 1200, defaultHeight: 628, category: 'Google Ads', icon: '🔍' },
+    
+    // Instagram
     { key: 'Instagram_Square', name: 'Instagram 方形', defaultWidth: 1080, defaultHeight: 1080, category: 'Instagram', icon: '📷' },
     { key: 'Instagram_Story', name: 'Instagram Story', defaultWidth: 1080, defaultHeight: 1920, category: 'Instagram', icon: '📷' },
+    
+    // LinkedIn
     { key: 'LinkedIn_Single', name: 'LinkedIn 广告', defaultWidth: 1200, defaultHeight: 627, category: 'LinkedIn', icon: '💼' },
-    { key: 'Twitter_Post', name: 'Twitter 广告', defaultWidth: 1200, defaultHeight: 675, category: 'Twitter', icon: '🐦' }
+    
+    // Twitter/X
+    { key: 'Twitter_Post', name: 'Twitter 广告', defaultWidth: 1200, defaultHeight: 675, category: 'Twitter', icon: '🐦' },
+    
+    // Amazon (新增)
+    { key: 'Amazon_Mobile', name: 'Amazon 移动端', defaultWidth: 600, defaultHeight: 500, category: 'Amazon', icon: '🛒' },
+    { key: 'Amazon_Desktop', name: 'Amazon 桌面端', defaultWidth: 1000, defaultHeight: 500, category: 'Amazon', icon: '🛒' },
+    { key: 'Amazon_Banner', name: 'Amazon 横幅', defaultWidth: 1500, defaultHeight: 300, category: 'Amazon', icon: '🛒' },
+    
+    // eBay (新增)
+    { key: 'eBay_Standard', name: 'eBay 标准', defaultWidth: 900, defaultHeight: 900, category: 'eBay', icon: '🏷️' },
+    { key: 'eBay_Billboard', name: 'eBay 广告牌', defaultWidth: 1200, defaultHeight: 270, category: 'eBay', icon: '🏷️' },
+    { key: 'eBay_Mobile', name: 'eBay 移动端', defaultWidth: 660, defaultHeight: 440, category: 'eBay', icon: '🏷️' },
+    
+    // TikTok (新增)
+    { key: 'TikTok_Feed', name: 'TikTok Feed', defaultWidth: 1080, defaultHeight: 1920, category: 'TikTok', icon: '📱' },
+    { key: 'TikTok_Splash', name: 'TikTok 开屏', defaultWidth: 1080, defaultHeight: 1920, category: 'TikTok', icon: '📱' },
+    { key: 'TikTok_Display', name: 'TikTok 展示', defaultWidth: 1200, defaultHeight: 628, category: 'TikTok', icon: '📱' },
+    
+    // Reddit (新增)
+    { key: 'Reddit_Feed', name: 'Reddit Feed', defaultWidth: 1200, defaultHeight: 628, category: 'Reddit', icon: '🔶' },
+    { key: 'Reddit_Card', name: 'Reddit 卡片', defaultWidth: 400, defaultHeight: 300, category: 'Reddit', icon: '🔶' },
+    { key: 'Reddit_Mobile', name: 'Reddit 移动端', defaultWidth: 640, defaultHeight: 640, category: 'Reddit', icon: '🔶' }
   ]
   
   // 平台选择处理函数
@@ -1511,7 +1576,7 @@ export default function AdGenerator() {
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">平台选择</h2>
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">已选择 {getSelectedPlatformCount()}/8</span>
+                <span className="text-xs text-gray-500">已选择 {getSelectedPlatformCount()}/{allPlatforms.length}</span>
                 <button
                   onClick={handleSelectAll}
                   className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
