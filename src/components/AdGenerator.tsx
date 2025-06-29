@@ -967,8 +967,8 @@ export default function AdGenerator() {
     if (!canvasRef.current || !canvasContainerRef.current || images.length === 0) return;
     
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = ((e.clientX - rect.left) / rect.width) * 100; // 转为百分比
-    const y = ((e.clientY - rect.top) / rect.height) * 100; // 转为百分比
+    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100); // 转为百分比
+    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100); // 转为百分比
     
     console.log("鼠标按下:", x, y);
     
@@ -1066,8 +1066,8 @@ export default function AdGenerator() {
     if (!canvasRef.current || !canvasContainerRef.current) return;
     
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
+    const x = Math.round(Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100)));
+    const y = Math.round(Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100)));
     
     // 处理按钮拖拽
     if (draggedButton) {
@@ -1393,7 +1393,7 @@ export default function AdGenerator() {
                       {group.position === 'custom' && (
                         <div className="flex items-center space-x-4 mt-3 bg-blue-50 p-3 rounded-lg">
                           <div className="flex-1">
-                            <label htmlFor={`x-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">X {t('Position')}: {group.x || 50}%</label>
+                            <label htmlFor={`x-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">X {t('Position')}: {Math.round(group.x || 50)}%</label>
                             <input
                               id={`x-${group.id}`}
                               type="range"
@@ -1406,7 +1406,7 @@ export default function AdGenerator() {
                           </div>
                           
                           <div className="flex-1">
-                            <label htmlFor={`y-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">Y {t('Position')}: {group.y || 50}%</label>
+                            <label htmlFor={`y-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">Y {t('Position')}: {Math.round(group.y || 50)}%</label>
                             <input
                               id={`y-${group.id}`}
                               type="range"
@@ -1662,7 +1662,7 @@ export default function AdGenerator() {
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div>
                     <label htmlFor="button-x" className="block text-sm font-medium mb-1 text-gray-700">
-                      {t('X Position')}: {buttonStyle.x !== undefined ? buttonStyle.x : 50}%
+                      {t('X Position')}: {Math.round(buttonStyle.x !== undefined ? buttonStyle.x : 50)}%
                     </label>
                     <input
                       id="button-x"
@@ -1677,7 +1677,7 @@ export default function AdGenerator() {
                   
                   <div>
                     <label htmlFor="button-y" className="block text-sm font-medium mb-1 text-gray-700">
-                      {t('Y Position')}: {buttonStyle.y !== undefined ? buttonStyle.y : 75}%
+                      {t('Y Position')}: {Math.round(buttonStyle.y !== undefined ? buttonStyle.y : 75)}%
                     </label>
                     <input
                       id="button-y"
