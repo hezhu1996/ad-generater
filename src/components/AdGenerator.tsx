@@ -783,7 +783,18 @@ export default function AdGenerator() {
           
           if (imageData) {
             const base64Data = imageData.split(',')[1]
-            const fileName = `${platform.name}_${imageCounter.toString().padStart(3, '0')}.png`
+            
+            // 提取文字选项和CTA内容，生成更有意义的文件名
+            const textOptions = combination.texts.map(t => t.text.trim()).filter(Boolean);
+            const textPart = textOptions.length > 0 
+              ? textOptions.join('_').substring(0, 30).replace(/[\\/:*?"<>|]/g, '') 
+              : "无文字";
+              
+            const ctaPart = combination.ctaText
+              ? combination.ctaText.substring(0, 20).replace(/[\\/:*?"<>|]/g, '')
+              : "无CTA";
+              
+            const fileName = `${platform.name}_${textPart}_${ctaPart}_${imageCounter.toString().padStart(3, '0')}.png`
             zip.file(fileName, base64Data, { base64: true })
           }
           imageCounter++
@@ -823,7 +834,7 @@ export default function AdGenerator() {
     }
   }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
 
-  // 确保在拖动结束后正确更新一次
+  // 确保在拖动结束后正确更新一次，保持当前选择的文字选项
   useEffect(() => {
     if (draggedText === null && debounceUpdate !== null) {
       // 重置位置状态
@@ -832,17 +843,14 @@ export default function AdGenerator() {
       // 延迟更新以确保状态已完全更新
       setTimeout(() => {
         if (image && canvasRef.current) {
-          const combinations = generateAllCombinations();
-          if (combinations.length > 0) {
-            const firstCombination = combinations[0];
-            const currentPlatform = getCurrentPreviewPlatform()
-            generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, previewCtaText)
-              .catch(err => console.error('拖动后预览更新失败:', err));
-          }
+          const currentPlatform = getCurrentPreviewPlatform();
+          // 直接使用当前预览的文字组，避免重置回第一个选项
+          generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
+            .catch(err => console.error('拖动后预览更新失败:', err));
         }
       }, 50);
     }
-  }, [draggedText, debounceUpdate, generateAdImage, generateAllCombinations, image, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
+  }, [draggedText, debounceUpdate, generateAdImage, image, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts]);
 
   // 更新handleCanvasMouseDown以支持按钮拖拽
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
