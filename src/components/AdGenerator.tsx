@@ -102,7 +102,8 @@ export default function AdGenerator() {
     mode: 'auto',
     widthRatio: 0.9,  // 默认图片宽度占画布的90%
     heightRatio: 0.7, // 默认图片高度占画布的70%
-    aspectRatio: 'auto' // 自动保持原始比例
+    aspectRatio: 'auto', // 自动保持原始比例
+    stretchMode: 'maintain' // 默认保持图片比例
   });
   const [buttonStyle, setButtonStyle] = useState<ButtonStyle>({
     backgroundColor: '#3b82f6',
@@ -629,14 +630,20 @@ export default function AdGenerator() {
         ctx.fillStyle = '#ffffff'
         ctx.fillRect(0, 0, width, height)
         
-        // 计算图片位置，保持比例并居中
-        // 使用更精确的缩放计算，确保图片不会变形
+        // 计算图片位置和大小
         const imgAspectRatio = img.width / img.height
         const canvasAspectRatio = width / height
         
         let scaledWidth, scaledHeight, x, y
         
-        if (imageScaleSettings.mode === 'custom' && imageScaleSettings.aspectRatio !== 'auto') {
+        // 完全拉伸模式 - 忽略原始比例，直接使用设定的宽高比例
+        if (imageScaleSettings.mode === 'custom' && imageScaleSettings.stretchMode === 'stretch') {
+          // 直接使用设定的宽度和高度比例，不保持原始比例
+          scaledWidth = width * imageScaleSettings.widthRatio;
+          scaledHeight = height * imageScaleSettings.heightRatio;
+        }
+        // 自定义宽高比模式
+        else if (imageScaleSettings.mode === 'custom' && imageScaleSettings.aspectRatio !== 'auto') {
           // 使用自定义宽高比
           const [widthPart, heightPart] = imageScaleSettings.aspectRatio.split(':').map(Number);
           const customAspectRatio = widthPart / heightPart;
@@ -650,10 +657,9 @@ export default function AdGenerator() {
             scaledHeight = height * imageScaleSettings.heightRatio;
             scaledWidth = scaledHeight * customAspectRatio;
           }
-        } else {
-          // 使用自动模式或保持原始比例
-          // 直接使用宽度和高度比例，不再考虑图片比例
-          // 这样宽度和高度的变化都会很明显
+        } 
+        // 自动模式或保持原始比例
+        else {
           const maxScaledWidth = width * imageScaleSettings.widthRatio;
           const maxScaledHeight = height * imageScaleSettings.heightRatio;
           
@@ -911,16 +917,26 @@ export default function AdGenerator() {
       }
     }
     
+    // 新增：如果既没有CTA按钮也没有文字组合，创建一个空的组合
+    // 这样用户可以下载只有图片比例设置的广告图片
+    if (ctaOptions.length === 0 && textGroupOptions.length === 0) {
+      combinations.push({
+        texts: [],
+        ctaText: ''
+      });
+    }
+    
     return combinations
   }
 
   const handleGenerateAds = async () => {
     const combinations = generateAllCombinations()
     
-    if (images.length === 0 || combinations.length === 0) {
+    // 修改条件：只在没有上传图片时提示错误
+    if (images.length === 0) {
       alert(i18n.language === 'en' 
-        ? 'Please upload images and add at least one ad text or CTA button text option' 
-        : '请上传图片并添加至少一个广告文字或CTA按钮文字选项')
+        ? 'Please upload images' 
+        : '请上传图片')
       return
     }
 
@@ -1298,7 +1314,8 @@ export default function AdGenerator() {
       mode: 'auto',
       widthRatio: 0.9,
       heightRatio: 0.7,
-      aspectRatio: 'auto'
+      aspectRatio: 'auto',
+      stretchMode: 'maintain'
     });
   };
 
@@ -2186,23 +2203,51 @@ export default function AdGenerator() {
             
             {/* 自定义宽高比选择（仅在自定义模式下显示） */}
             {imageScaleSettings.mode === 'custom' && (
-              <div className="mb-4">
-                <label htmlFor="aspect-ratio" className="block text-sm font-medium text-gray-700 mb-1">{t('Aspect Ratio')}</label>
-                <select
-                  id="aspect-ratio"
-                  value={imageScaleSettings.aspectRatio}
-                  onChange={(e) => handleAspectRatioChange(e.target.value)}
-                  className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="auto">{t('Auto (Keep Original)')}</option>
-                  <option value="1:1">{t('Square (1:1)')}</option>
-                  <option value="4:3">{t('Standard (4:3)')}</option>
-                  <option value="16:9">{t('Widescreen (16:9)')}</option>
-                  <option value="3:2">{t('Photo (3:2)')}</option>
-                  <option value="2:3">{t('Portrait (2:3)')}</option>
-                </select>
-                <p className="text-xs text-gray-500 mt-1">{t('Custom aspect ratio will override auto-scaling')}</p>
-              </div>
+              <>
+                <div className="mb-4">
+                  <label htmlFor="aspect-ratio" className="block text-sm font-medium text-gray-700 mb-1">{t('Aspect Ratio')}</label>
+                  <select
+                    id="aspect-ratio"
+                    value={imageScaleSettings.aspectRatio}
+                    onChange={(e) => handleAspectRatioChange(e.target.value)}
+                    className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="auto">{t('Auto (Keep Original)')}</option>
+                    <option value="1:1">{t('Square (1:1)')}</option>
+                    <option value="4:3">{t('Standard (4:3)')}</option>
+                    <option value="16:9">{t('Widescreen (16:9)')}</option>
+                    <option value="3:2">{t('Photo (3:2)')}</option>
+                    <option value="2:3">{t('Portrait (2:3)')}</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">{t('Custom aspect ratio will override auto-scaling')}</p>
+                </div>
+                
+                {/* 拉伸模式选择 */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">{t('Stretch Mode')}</label>
+                  <div className="flex space-x-4">
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        className="form-radio h-4 w-4 text-blue-600"
+                        checked={imageScaleSettings.stretchMode === 'maintain'}
+                        onChange={() => setImageScaleSettings(prev => ({ ...prev, stretchMode: 'maintain' }))}
+                      />
+                      <span className="ml-2 text-gray-700">{t('Maintain Aspect Ratio')}</span>
+                    </label>
+                    <label className="inline-flex items-center">
+                      <input
+                        type="radio"
+                        className="form-radio h-4 w-4 text-blue-600"
+                        checked={imageScaleSettings.stretchMode === 'stretch'}
+                        onChange={() => setImageScaleSettings(prev => ({ ...prev, stretchMode: 'stretch' }))}
+                      />
+                      <span className="ml-2 text-gray-700">{t('Stretch to Fill')}</span>
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{t('Stretch to Fill may distort the image but ensures it covers the entire area')}</p>
+                </div>
+              </>
             )}
             
             {/* 重置按钮 */}

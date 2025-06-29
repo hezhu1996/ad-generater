@@ -155,6 +155,10 @@ const zhResources = {
     'Reset to Default': '重置为默认值',
     'Click to upload images': '点击上传图片',
     'Supports JPG, PNG (Max 5 Images)': '支持 JPG, PNG 格式（最多5张）',
+    'Stretch Mode': '拉伸模式',
+    'Maintain Aspect Ratio': '保持原始比例',
+    'Stretch to Fill': '拉伸填充',
+    'Stretch to Fill may distort the image but ensures it covers the entire area': '拉伸填充可能会变形图片，但确保覆盖整个区域',
 
     // 其他
     'Language': '语言',
@@ -323,6 +327,10 @@ const enResources = {
     'Reset to Default': 'Reset to Default',
     'Click to upload images': 'Click to upload images',
     'Supports JPG, PNG (Max 5 Images)': 'Supports JPG, PNG (Max 5 Images)',
+    'Stretch Mode': 'Stretch Mode',
+    'Maintain Aspect Ratio': 'Maintain Aspect Ratio',
+    'Stretch to Fill': 'Stretch to Fill',
+    'Stretch to Fill may distort the image but ensures it covers the entire area': 'Stretch to Fill may distort the image but ensures it covers the entire area',
 
     // 其他
     'Language': 'Language',

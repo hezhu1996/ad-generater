@@ -37,6 +37,7 @@ export interface ImageScaleSettings {
   widthRatio: number      // 宽度比例 (0-1)
   heightRatio: number     // 高度比例 (0-1)
   aspectRatio: string     // 宽高比 (例如 "4:3", "16:9")
+  stretchMode: 'maintain' | 'stretch' // 拉伸模式：maintain保持比例，stretch完全拉伸
 }
 
 export interface CombinedTemplate {
