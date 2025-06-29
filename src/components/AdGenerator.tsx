@@ -564,8 +564,11 @@ export default function AdGenerator() {
     }
   }
 
-  const generateAdImage = useCallback(async (width: number, height: number, format: string, textCombination: AdText[], ctaText: string) => {
-    const currentImage = images[currentImageIndex]
+  const generateAdImage = useCallback(async (width: number, height: number, format: string, textCombination: AdText[], ctaText: string, imageIndex?: number) => {
+    // 使用传入的imageIndex参数，如果未提供则使用currentImageIndex
+    const imgIndex = imageIndex !== undefined ? imageIndex : currentImageIndex;
+    const currentImage = images[imgIndex];
+    
     if (!currentImage || !canvasRef.current || images.length === 0) return null
 
     // 调试输出
@@ -579,6 +582,7 @@ export default function AdGenerator() {
       size: buttonStyle.size || 1
     });
     console.log("画布尺寸:", { width, height });
+    console.log("使用图片索引:", imgIndex, "总图片数:", images.length);
 
     return new Promise<string>((resolve) => {
       const canvas = canvasRef.current!
@@ -713,9 +717,10 @@ export default function AdGenerator() {
 
         resolve(canvas.toDataURL('image/png'))
       }
-      img.src = images[currentImageIndex]
+      img.src = currentImage
+      console.log("使用图片索引:", imgIndex)
     })
-  }, [images, currentImageIndex, buttonStyle, draggedText, draggedButton])
+  }, [images, buttonStyle, draggedText, draggedButton])
 
   // 分离CTA按钮绘制函数
   const drawCTAButton = (ctx: CanvasRenderingContext2D, width: number, height: number, imageHeight: number, ctaButtonText: string, ctaButtonStyle: ButtonStyle) => {
@@ -860,7 +865,9 @@ export default function AdGenerator() {
     const combinations = generateAllCombinations()
     
     if (images.length === 0 || combinations.length === 0) {
-      alert('请上传图片并添加至少一个广告文字或CTA按钮文字选项')
+      alert(i18n.language === 'en' 
+        ? 'Please upload images and add at least one ad text or CTA button text option' 
+        : '请上传图片并添加至少一个广告文字或CTA按钮文字选项')
       return
     }
 
@@ -877,8 +884,8 @@ export default function AdGenerator() {
       
       // 为每张上传的图片生成广告
       for (let imgIndex = 0; imgIndex < images.length; imgIndex++) {
-        // 临时切换到当前处理的图片
-        setCurrentImageIndex(imgIndex);
+        // 不再需要临时切换当前图片索引，直接传递imgIndex参数给generateAdImage
+        console.log(`开始处理图片 ${imgIndex + 1}/${images.length}`);
         
         let imageCounter = 1;
         
@@ -887,12 +894,14 @@ export default function AdGenerator() {
             // 等待一小段时间确保状态更新
             await new Promise(resolve => setTimeout(resolve, 10));
             
+            console.log(`生成图片: 产品图索引=${imgIndex}, 平台=${platform.name}, 组合=${imageCounter}`);
             const imageData = await generateAdImage(
               platform.width, 
               platform.height, 
               'png',
               combination.texts,
-              combination.ctaText
+              combination.ctaText,
+              imgIndex
             )
             
             if (imageData) {
@@ -902,13 +911,14 @@ export default function AdGenerator() {
               const textOptions = combination.texts.map(t => t.text.trim()).filter(Boolean);
               const textPart = textOptions.length > 0 
                 ? textOptions.join('_').substring(0, 30).replace(/[\\/:*?"<>|]/g, '') 
-                : "无文字";
+                : i18n.language === 'en' ? "No Text" : "无文字";
                 
               const ctaPart = combination.ctaText
                 ? combination.ctaText.substring(0, 20).replace(/[\\/:*?"<>|]/g, '')
-                : "无CTA";
+                : i18n.language === 'en' ? "No CTA" : "无CTA";
                 
-              const fileName = `图片${imgIndex+1}_${platform.name}_${textPart}_${ctaPart}_${imageCounter.toString().padStart(3, '0')}.png`
+              const imagePrefix = i18n.language === 'en' ? `Image${imgIndex+1}` : `图片${imgIndex+1}`;
+              const fileName = `${imagePrefix}_${platform.name}_${textPart}_${ctaPart}_${imageCounter.toString().padStart(3, '0')}.png`
               zip.file(fileName, base64Data, { base64: true })
             }
             imageCounter++
@@ -922,12 +932,17 @@ export default function AdGenerator() {
 
       const content = await zip.generateAsync({ type: 'blob' })
       const totalImages = platforms.length * combinations.length * images.length
-      saveAs(content, `advertisement_images_${totalImages}_variants.zip`)
+      const zipFileName = i18n.language === 'en' 
+        ? `advertisement_images_${totalImages}_variants.zip`
+        : `广告图片_${totalImages}_变体.zip`;
+      saveAs(content, zipFileName)
       
-      console.log(`生成了 ${totalImages} 张图片 (${platforms.length} 个平台 × ${combinations.length} 个文字组合 × ${images.length} 张产品图片)`)
+      console.log(i18n.language === 'en' 
+        ? `Generated ${totalImages} images (${platforms.length} platforms × ${combinations.length} text combinations × ${images.length} product images)`
+        : `生成了 ${totalImages} 张图片 (${platforms.length} 个平台 × ${combinations.length} 个文字组合 × ${images.length} 张产品图片)`)
     } catch (error) {
-      console.error('生成广告图片时出错:', error)
-      alert('生成图片时出现错误，请重试')
+      console.error(i18n.language === 'en' ? 'Error generating ad images:' : '生成广告图片时出错:', error)
+      alert(i18n.language === 'en' ? 'An error occurred while generating images, please try again' : '生成图片时出现错误，请重试')
     } finally {
       setIsGenerating(false)
     }
@@ -938,7 +953,7 @@ export default function AdGenerator() {
     // 如果不是拖动中就更新预览
     if (!draggedText && !draggedButton && images.length > 0 && canvasRef.current) {
       const currentPlatform = getCurrentPreviewPlatform();
-      generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
+      generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText, currentImageIndex)
         .catch(err => console.error('预览更新失败:', err));
     }
   }, [images, currentImageIndex, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts]);
@@ -955,7 +970,7 @@ export default function AdGenerator() {
         if (images.length > 0 && canvasRef.current) {
           // 刷新预览 - 直接调用预览逻辑
           const currentPlatform = getCurrentPreviewPlatform();
-          generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
+          generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText, currentImageIndex)
             .catch(err => console.error('拖动后预览更新失败:', err));
         }
       }, 50);
