@@ -1347,32 +1347,32 @@ export default function AdGenerator() {
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center space-x-4">
                         <div className="flex items-center space-x-2">
-                          <label htmlFor={`position-${group.id}`} className="text-sm font-medium text-gray-700">位置:</label>
+                          <label htmlFor={`position-${group.id}`} className="text-sm font-medium text-gray-700">{t('位置:')}</label>
                           <select
                             id={`position-${group.id}`}
                             value={group.position}
                             onChange={(e) => updateAdTextGroup(group.id, { position: e.target.value as 'top' | 'bottom' | 'custom' })}
                             className="border rounded px-2 py-1 text-sm text-gray-800"
                           >
-                            <option value="top">顶部</option>
-                            <option value="bottom">底部</option>
-                            <option value="custom">自定义</option>
+                            <option value="top">{t('Top')}</option>
+                            <option value="bottom">{t('Bottom')}</option>
+                            <option value="custom">{t('Custom')}</option>
                           </select>
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          <span className="text-sm font-medium text-gray-700">颜色:</span>
+                          <span className="text-sm font-medium text-gray-700">{t('颜色:')}</span>
                           <button
                             type="button"
                             className="w-8 h-8 rounded border-2 border-gray-300 cursor-pointer shadow-sm"
                             style={{ backgroundColor: group.color }}
                             onClick={() => setShowColorPicker(showColorPicker === group.id ? null : group.id)}
-                            aria-label="选择文字颜色"
+                            aria-label={t('选择文字颜色')}
                           />
                         </div>
                         
                         <div className="flex items-center space-x-2">
-                          <label htmlFor={`font-${group.id}`} className="text-sm font-medium text-gray-700">字体:</label>
+                          <label htmlFor={`font-${group.id}`} className="text-sm font-medium text-gray-700">{t('字体:')}</label>
                           <select
                             id={`font-${group.id}`}
                             value={group.font}
@@ -1393,7 +1393,7 @@ export default function AdGenerator() {
                       {group.position === 'custom' && (
                         <div className="flex items-center space-x-4 mt-3 bg-blue-50 p-3 rounded-lg">
                           <div className="flex-1">
-                            <label htmlFor={`x-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">X位置: {group.x || 50}%</label>
+                            <label htmlFor={`x-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">X {t('Position')}: {group.x || 50}%</label>
                             <input
                               id={`x-${group.id}`}
                               type="range"
@@ -1406,7 +1406,7 @@ export default function AdGenerator() {
                           </div>
                           
                           <div className="flex-1">
-                            <label htmlFor={`y-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">Y位置: {group.y || 50}%</label>
+                            <label htmlFor={`y-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">Y {t('Position')}: {group.y || 50}%</label>
                             <input
                               id={`y-${group.id}`}
                               type="range"
@@ -1423,7 +1423,7 @@ export default function AdGenerator() {
                       {/* 添加文字大小控制 - 不限于自定义位置 */}
                       <div className="mt-3 bg-gray-50 p-3 rounded-lg">
                         <label htmlFor={`size-${group.id}`} className="block text-sm font-medium text-gray-700 mb-1">
-                          文字大小: {Math.round(((group.size === undefined ? 1 : group.size) * 100))}%
+                          {t('文字大小:')} {Math.round(((group.size === undefined ? 1 : group.size) * 100))}%
                         </label>
                         <div className="flex items-center space-x-2">
                           <input
@@ -1447,7 +1447,7 @@ export default function AdGenerator() {
                             }}
                             className="bg-gray-200 hover:bg-gray-300 text-xs px-2 py-1 rounded"
                           >
-                            重置
+                            {t('Reset')}
                           </button>
                         </div>
                       </div>
@@ -1455,12 +1455,12 @@ export default function AdGenerator() {
                       {/* 文字选项列表 */}
                       <div className="space-y-2">
                         <div className="flex justify-between items-center">
-                          <label className="text-sm font-medium text-gray-700">文字选项:</label>
+                          <label className="text-sm font-medium text-gray-700">{t('Text Options')}:</label>
                           <button
                             onClick={() => addTextOption(group.id)}
                             className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                           >
-                            + 添加选项
+                            {t('Add Option')}
                           </button>
                         </div>
                         
@@ -1468,7 +1468,7 @@ export default function AdGenerator() {
                           <div key={index} className="flex items-center space-x-2">
                             <input
                               type="text"
-                              placeholder={`选项 ${index + 1}`}
+                              placeholder={`${t('Option')} ${index + 1}`}
                               value={option}
                               onChange={(e) => updateTextOption(group.id, index, e.target.value)}
                               className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-800 caret-blue-500"
@@ -1496,7 +1496,7 @@ export default function AdGenerator() {
                               onClick={() => setShowColorPicker(null)}
                               className="mt-2 w-full bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300"
                             >
-                              完成
+                              {t('Done')}
                             </button>
                           </div>
                         </div>

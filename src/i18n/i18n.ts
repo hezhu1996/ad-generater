@@ -33,7 +33,7 @@ const zhResources = {
 
     // 上传区域
     'Click or Drag to Upload': '点击或拖拽上传图片',
-    'Supports JPG, PNG (Max 5 Images)': '支持 JPG, PNG 格式 (最多5张图片)',
+    'Supports JPG, PNG (Max 5)': '支持 JPG, PNG 格式 (最多5张)',
     'Uploaded': '已上传',
     'Images': '张图片',
     'Previous image': '上一张图片',
@@ -52,6 +52,13 @@ const zhResources = {
     'Text Size': '文字大小',
     'Text Options': '文字选项',
     'Option': '选项',
+    '位置:': '位置:',
+    '颜色:': '颜色:',
+    '字体:': '字体:',
+    'X位置:': 'X位置:',
+    'Y位置:': 'Y位置:',
+    '文字大小:': '文字大小:',
+    '选择文字颜色': '选择文字颜色',
 
     // CTA按钮
     'Button Text Options': '按钮文字选项',
@@ -159,7 +166,7 @@ const enResources = {
 
     // 上传区域
     'Click or Drag to Upload': 'Click or Drag to Upload Images',
-    'Supports JPG, PNG (Max 5 Images)': 'Supports JPG, PNG (Max 5 Images)',
+    'Supports JPG, PNG (Max 5)': 'Supports JPG, PNG (Max 5)',
     'Uploaded': 'Uploaded',
     'Images': 'images',
     'Previous image': 'Previous image',
@@ -178,6 +185,13 @@ const enResources = {
     'Text Size': 'Text Size',
     'Text Options': 'Text Options',
     'Option': 'Option',
+    '位置:': 'Position:',
+    '颜色:': 'Color:',
+    '字体:': 'Font:',
+    'X位置:': 'X Position:',
+    'Y位置:': 'Y Position:',
+    '文字大小:': 'Text Size:',
+    '选择文字颜色': 'Select Text Color',
 
     // CTA按钮
     'Button Text Options': 'Button Text Options',
