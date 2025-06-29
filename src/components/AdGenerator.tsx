@@ -58,12 +58,27 @@ interface ButtonStyle {
   size?: number // 按钮大小比例，默认为1
 }
 
+// 添加图片比例设置接口
+interface ImageScaleSettings {
+  mode: 'auto' | 'custom'; // 自动或自定义模式
+  widthRatio: number;      // 宽度比例 (0-1)
+  heightRatio: number;     // 高度比例 (0-1)
+  aspectRatio: string;     // 宽高比 (例如 "4:3", "16:9")
+}
+
 export default function AdGenerator() {
   const { t, i18n } = useTranslation();
   
   const [images, setImages] = useState<string[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
   const [adTextGroups, setAdTextGroups] = useState<AdTextGroup[]>([])
+  // 添加图片比例设置状态
+  const [imageScaleSettings, setImageScaleSettings] = useState<ImageScaleSettings>({
+    mode: 'auto',
+    widthRatio: 0.9,  // 默认图片宽度占画布的90%
+    heightRatio: 0.7, // 默认图片高度占画布的70%
+    aspectRatio: 'auto' // 自动保持原始比例
+  });
   const [buttonStyle, setButtonStyle] = useState<ButtonStyle>({
     backgroundColor: '#3b82f6',
     textColor: '#ffffff',
@@ -612,40 +627,61 @@ export default function AdGenerator() {
         
         let scaledWidth, scaledHeight, x, y
         
-        if (imgAspectRatio > canvasAspectRatio) {
-          // 图片更宽，以宽度为准
-          scaledWidth = width * 0.8 // 留出一些边距
-          scaledHeight = scaledWidth / imgAspectRatio
-          x = (width - scaledWidth) / 2
-          y = (height - scaledHeight) / 2
+        if (imageScaleSettings.mode === 'custom' && imageScaleSettings.aspectRatio !== 'auto') {
+          // 使用自定义宽高比
+          const [widthPart, heightPart] = imageScaleSettings.aspectRatio.split(':').map(Number);
+          const customAspectRatio = widthPart / heightPart;
+          
+          // 根据自定义宽高比和设定的宽度/高度比例计算尺寸
+          scaledWidth = width * imageScaleSettings.widthRatio;
+          scaledHeight = scaledWidth / customAspectRatio;
+          
+          // 如果高度超出了设定的高度比例，则按高度比例重新计算
+          if (scaledHeight > height * imageScaleSettings.heightRatio) {
+            scaledHeight = height * imageScaleSettings.heightRatio;
+            scaledWidth = scaledHeight * customAspectRatio;
+          }
         } else {
-          // 图片更高，以高度为准
-          scaledHeight = height * 0.6 // 为文字和按钮留出空间
-          scaledWidth = scaledHeight * imgAspectRatio
-          x = (width - scaledWidth) / 2
-          y = (height - scaledHeight) / 2
+          // 使用自动模式或保持原始比例
+          // 直接使用宽度和高度比例，不再考虑图片比例
+          // 这样宽度和高度的变化都会很明显
+          const maxScaledWidth = width * imageScaleSettings.widthRatio;
+          const maxScaledHeight = height * imageScaleSettings.heightRatio;
+          
+          // 保持原始宽高比的同时，确保不超过最大宽度和高度
+          if (imgAspectRatio > 1) {
+            // 图片更宽
+            scaledWidth = maxScaledWidth;
+            scaledHeight = scaledWidth / imgAspectRatio;
+            
+            // 如果高度超出最大高度，则按高度重新计算
+            if (scaledHeight > maxScaledHeight) {
+              scaledHeight = maxScaledHeight;
+              scaledWidth = scaledHeight * imgAspectRatio;
+            }
+          } else {
+            // 图片更高或正方形
+            scaledHeight = maxScaledHeight;
+            scaledWidth = scaledHeight * imgAspectRatio;
+            
+            // 如果宽度超出最大宽度，则按宽度重新计算
+            if (scaledWidth > maxScaledWidth) {
+              scaledWidth = maxScaledWidth;
+              scaledHeight = scaledWidth / imgAspectRatio;
+            }
+          }
         }
         
-        // 确保图片不会超出画布边界
-        if (scaledWidth > width) {
-          scaledWidth = width * 0.8
-          scaledHeight = scaledWidth / imgAspectRatio
-          x = (width - scaledWidth) / 2
-          y = (height - scaledHeight) / 2
-        }
-        
-        if (scaledHeight > height * 0.7) { // 为文字和按钮保留30%的空间
-          scaledHeight = height * 0.6
-          scaledWidth = scaledHeight * imgAspectRatio
-          x = (width - scaledWidth) / 2
-          y = (height - scaledHeight) / 2
-        }
+        // 计算居中位置
+        x = (width - scaledWidth) / 2
+        y = (height - scaledHeight) / 2
         
         console.log("图片绘制参数:", {
           originalSize: { width: img.width, height: img.height },
           scaledSize: { width: scaledWidth, height: scaledHeight },
           position: { x, y },
-          canvasSize: { width, height }
+          canvasSize: { width, height },
+          scaleSettings: imageScaleSettings
         });
         
         ctx.drawImage(img, x, y, scaledWidth, scaledHeight)
@@ -720,7 +756,7 @@ export default function AdGenerator() {
       img.src = currentImage
       console.log("使用图片索引:", imgIndex)
     })
-  }, [images, buttonStyle, draggedText, draggedButton])
+  }, [images, buttonStyle, draggedText, draggedButton, imageScaleSettings])
 
   // 分离CTA按钮绘制函数
   const drawCTAButton = (ctx: CanvasRenderingContext2D, width: number, height: number, imageHeight: number, ctaButtonText: string, ctaButtonStyle: ButtonStyle) => {
@@ -1207,6 +1243,48 @@ export default function AdGenerator() {
     );
   }, [adTextGroups]);
 
+  // 处理图片比例模式变更
+  const handleImageScaleModeChange = (mode: 'auto' | 'custom') => {
+    setImageScaleSettings(prev => ({
+      ...prev,
+      mode
+    }));
+  };
+
+  // 处理宽度比例变更
+  const handleWidthRatioChange = (value: number) => {
+    setImageScaleSettings(prev => ({
+      ...prev,
+      widthRatio: Math.max(0.2, Math.min(1, value))
+    }));
+  };
+
+  // 处理高度比例变更
+  const handleHeightRatioChange = (value: number) => {
+    setImageScaleSettings(prev => ({
+      ...prev,
+      heightRatio: Math.max(0.2, Math.min(1, value))
+    }));
+  };
+
+  // 处理宽高比变更
+  const handleAspectRatioChange = (value: string) => {
+    setImageScaleSettings(prev => ({
+      ...prev,
+      aspectRatio: value
+    }));
+  };
+  
+  // 重置图片比例设置
+  const handleResetImageScale = () => {
+    setImageScaleSettings({
+      mode: 'auto',
+      widthRatio: 0.9,
+      heightRatio: 0.7,
+      aspectRatio: 'auto'
+    });
+  };
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-8">
@@ -1320,29 +1398,30 @@ export default function AdGenerator() {
                   </div>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  className="w-full h-full bg-transparent"
+                <div
+                  className="flex flex-col items-center justify-center cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <div className="space-y-2">
-                    <div className="text-4xl text-gray-400">📷</div>
-                    <p className="text-gray-600">{t('Click or Drag to Upload')}</p>
-                    <p className="text-sm text-gray-400">{t('Supports JPG, PNG (Max 5)')}</p>
+                  <div className="text-blue-500 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
                   </div>
-                </button>
+                  <p className="text-gray-700 font-medium">{t('Click to upload images')}</p>
+                  <p className="text-gray-500 text-sm mt-1">{t('Supports JPG, PNG (Max 5 Images)')}</p>
+                </div>
               )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={(e) => handleImageUpload(e, false)}
+              />
             </div>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={(e) => handleImageUpload(e, false)}
-              className="hidden"
-              multiple
-            />
           </div>
-
+          
           {/* 广告文字设置 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
@@ -1737,6 +1816,101 @@ export default function AdGenerator() {
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+          
+          {/* 图片比例设置模块 */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">{t('Image Scale Settings')}</h2>
+            
+            {/* 模式选择 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('Scale Mode')}</label>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    className="form-radio h-4 w-4 text-blue-600"
+                    checked={imageScaleSettings.mode === 'auto'}
+                    onChange={() => handleImageScaleModeChange('auto')}
+                  />
+                  <span className="ml-2 text-gray-700">{t('Auto (Keep Original Ratio)')}</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    className="form-radio h-4 w-4 text-blue-600"
+                    checked={imageScaleSettings.mode === 'custom'}
+                    onChange={() => handleImageScaleModeChange('custom')}
+                  />
+                  <span className="ml-2 text-gray-700">{t('Custom')}</span>
+                </label>
+              </div>
+            </div>
+            
+            {/* 宽度比例滑块 */}
+            <div className="mb-4">
+              <label htmlFor="width-ratio" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('Width Ratio')}: {Math.round(imageScaleSettings.widthRatio * 100)}%
+              </label>
+              <input
+                id="width-ratio"
+                type="range"
+                min="20"
+                max="100"
+                value={imageScaleSettings.widthRatio * 100}
+                onChange={(e) => handleWidthRatioChange(parseInt(e.target.value) / 100)}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">{t('Controls how much of the canvas width the image occupies')}</p>
+            </div>
+            
+            {/* 高度比例滑块 */}
+            <div className="mb-4">
+              <label htmlFor="height-ratio" className="block text-sm font-medium text-gray-700 mb-1">
+                {t('Height Ratio')}: {Math.round(imageScaleSettings.heightRatio * 100)}%
+              </label>
+              <input
+                id="height-ratio"
+                type="range"
+                min="20"
+                max="100"
+                value={imageScaleSettings.heightRatio * 100}
+                onChange={(e) => handleHeightRatioChange(parseInt(e.target.value) / 100)}
+                className="w-full"
+              />
+              <p className="text-xs text-gray-500 mt-1">{t('Controls how much of the canvas height the image occupies')}</p>
+            </div>
+            
+            {/* 自定义宽高比选择（仅在自定义模式下显示） */}
+            {imageScaleSettings.mode === 'custom' && (
+              <div className="mb-4">
+                <label htmlFor="aspect-ratio" className="block text-sm font-medium text-gray-700 mb-1">{t('Aspect Ratio')}</label>
+                <select
+                  id="aspect-ratio"
+                  value={imageScaleSettings.aspectRatio}
+                  onChange={(e) => handleAspectRatioChange(e.target.value)}
+                  className="border rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="auto">{t('Auto (Keep Original)')}</option>
+                  <option value="1:1">{t('Square (1:1)')}</option>
+                  <option value="4:3">{t('Standard (4:3)')}</option>
+                  <option value="16:9">{t('Widescreen (16:9)')}</option>
+                  <option value="3:2">{t('Photo (3:2)')}</option>
+                  <option value="2:3">{t('Portrait (2:3)')}</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">{t('Custom aspect ratio will override auto-scaling')}</p>
+              </div>
+            )}
+            
+            {/* 重置按钮 */}
+            <div className="flex justify-end">
+              <button
+                onClick={handleResetImageScale}
+                className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition-colors"
+              >
+                {t('Reset to Default')}
+              </button>
             </div>
           </div>
 

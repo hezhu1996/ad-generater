@@ -130,6 +130,26 @@ const zhResources = {
     'Platforms': '个平台',
     'Product Images': '张产品图片',
 
+    // 图片比例设置
+    'Image Scale Settings': '图片比例设置',
+    'Scale Mode': '缩放模式',
+    'Auto (Keep Original Ratio)': '自动（保持原始比例）',
+    'Width Ratio': '宽度比例',
+    'Height Ratio': '高度比例',
+    'Controls how much of the canvas width the image occupies': '控制图片占画布宽度的比例',
+    'Controls how much of the canvas height the image occupies': '控制图片占画布高度的比例',
+    'Aspect Ratio': '宽高比',
+    'Auto (Keep Original)': '自动（保持原始比例）',
+    'Square (1:1)': '正方形 (1:1)',
+    'Standard (4:3)': '标准 (4:3)',
+    'Widescreen (16:9)': '宽屏 (16:9)',
+    'Photo (3:2)': '照片 (3:2)',
+    'Portrait (2:3)': '人像 (2:3)',
+    'Custom aspect ratio will override auto-scaling': '自定义宽高比将覆盖自动缩放',
+    'Reset to Default': '重置为默认值',
+    'Click to upload images': '点击上传图片',
+    'Supports JPG, PNG (Max 5 Images)': '支持 JPG, PNG 格式（最多5张）',
+
     // 其他
     'Language': '语言',
     'Chinese': '中文',
@@ -250,7 +270,7 @@ const enResources = {
     '张图片': 'images',
     '个平台': 'platforms',
     'Image': 'Image',
-    'No Image Uploaded': 'No Images Uploaded',
+    'No Image Uploaded': 'No Image Uploaded',
     'Button': 'Button',
     '已选择': 'Selected',
 
@@ -262,6 +282,26 @@ const enResources = {
     'Total Image Count': 'Total Image Count',
     'Platforms': 'platforms',
     'Product Images': 'product images',
+
+    // 图片比例设置
+    'Image Scale Settings': 'Image Scale Settings',
+    'Scale Mode': 'Scale Mode',
+    'Auto (Keep Original Ratio)': 'Auto (Keep Original Ratio)',
+    'Width Ratio': 'Width Ratio',
+    'Height Ratio': 'Height Ratio',
+    'Controls how much of the canvas width the image occupies': 'Controls how much of the canvas width the image occupies',
+    'Controls how much of the canvas height the image occupies': 'Controls how much of the canvas height the image occupies',
+    'Aspect Ratio': 'Aspect Ratio',
+    'Auto (Keep Original)': 'Auto (Keep Original)',
+    'Square (1:1)': 'Square (1:1)',
+    'Standard (4:3)': 'Standard (4:3)',
+    'Widescreen (16:9)': 'Widescreen (16:9)',
+    'Photo (3:2)': 'Photo (3:2)',
+    'Portrait (2:3)': 'Portrait (2:3)',
+    'Custom aspect ratio will override auto-scaling': 'Custom aspect ratio will override auto-scaling',
+    'Reset to Default': 'Reset to Default',
+    'Click to upload images': 'Click to upload images',
+    'Supports JPG, PNG (Max 5 Images)': 'Supports JPG, PNG (Max 5 Images)',
 
     // 其他
     'Language': 'Language',
