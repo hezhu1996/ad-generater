@@ -306,15 +306,16 @@ export default function AdGenerator() {
     []
   );
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>, appendMode: boolean = false) => {
     const files = event.target.files
     if (files && files.length > 0) {
-      // 限制最多上传5张图片
-      const filesToProcess = Array.from(files).slice(0, 5)
+      // 限制最多上传5张图片（考虑已有图片数量）
+      const remainingSlots = 5 - (appendMode ? images.length : 0)
+      const filesToProcess = Array.from(files).slice(0, remainingSlots)
       
-      // 清除当前选择的图片
-      if (event.target.value) {
-        // 如果用户选择了新图片，重置图片数组
+      // 清除当前选择的图片（仅在非追加模式下）
+      if (!appendMode && event.target.value) {
+        // 如果用户选择了新图片且不是追加模式，重置图片数组
         setImages([])
         setCurrentImageIndex(0)
       }
@@ -330,6 +331,11 @@ export default function AdGenerator() {
         }
         reader.readAsDataURL(file)
       })
+      
+      // 清除input的value，确保用户可以再次选择相同的文件
+      if (event.target) {
+        event.target.value = ''
+      }
     }
   }
   
@@ -1235,15 +1241,48 @@ export default function AdGenerator() {
                     </div>
                   )}
                   
-                  <p className="text-sm text-gray-600">
-                    已上传 {images.length} 张图片
-                    <button 
-                      className="ml-2 text-blue-500 hover:text-blue-700 underline"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      更换
-                    </button>
-                  </p>
+                  <div className="flex justify-between items-center text-sm text-gray-600">
+                    <span>已上传 {images.length}/5 张图片</span>
+                    <div className="flex space-x-2">
+                      {/* 添加继续上传按钮 */}
+                      {images.length < 5 && (
+                        <button 
+                          className="text-blue-500 hover:text-blue-700 underline"
+                          onClick={() => {
+                            if (fileInputRef.current) {
+                              // 设置为追加模式
+                              fileInputRef.current.onchange = (e) => {
+                                // 修复类型转换错误
+                                if (e && e.target) {
+                                  handleImageUpload(e as unknown as React.ChangeEvent<HTMLInputElement>, true);
+                                }
+                              };
+                              fileInputRef.current.click();
+                            }
+                          }}
+                        >
+                          继续添加
+                        </button>
+                      )}
+                      <button 
+                        className="text-blue-500 hover:text-blue-700 underline"
+                        onClick={() => {
+                          if (fileInputRef.current) {
+                            // 设置为替换模式
+                            fileInputRef.current.onchange = (e) => {
+                              // 修复类型转换错误
+                              if (e && e.target) {
+                                handleImageUpload(e as unknown as React.ChangeEvent<HTMLInputElement>, false);
+                              }
+                            };
+                            fileInputRef.current.click();
+                          }
+                        }}
+                      >
+                        全部替换
+                      </button>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <button
@@ -1263,7 +1302,7 @@ export default function AdGenerator() {
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              onChange={handleImageUpload}
+              onChange={(e) => handleImageUpload(e, false)}
               className="hidden"
               multiple
             />
@@ -1833,8 +1872,9 @@ export default function AdGenerator() {
                 const textCombinations = adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)
                 const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
                 const totalCombinations = textCombinations * ctaCombinations
-                return totalCombinations * getSelectedPlatformCount() // 每个平台生成一张图片
-              })()} (共 {getSelectedPlatformCount()} 个平台)</p>
+                // 修复：使用 images.length 而不是硬编码值
+                return totalCombinations * getSelectedPlatformCount() * images.length 
+              })()} (共 {getSelectedPlatformCount()} 个平台，{images.length} 张产品图片)</p>
             </div>
           </div>
 
