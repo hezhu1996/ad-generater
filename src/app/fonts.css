@@ -1,0 +1,39 @@
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Noto Sans SC Regular'), local('NotoSansSC-Regular');
+}
+
+@font-face {
+  font-family: 'Noto Sans TC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Noto Sans TC Regular'), local('NotoSansTC-Regular');
+}
+
+@font-face {
+  font-family: 'Noto Serif SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Noto Serif SC Regular'), local('NotoSerifSC-Regular');
+}
+
+@font-face {
+  font-family: 'Zen Old Mincho';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Zen Old Mincho Regular'), local('ZenOldMincho-Regular');
+}
+
+@font-face {
+  font-family: 'Zen Maru Gothic';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Zen Maru Gothic Regular'), local('ZenMaruGothic-Regular');
+} 

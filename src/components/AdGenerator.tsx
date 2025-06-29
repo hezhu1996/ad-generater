@@ -35,6 +35,16 @@ export default function AdGenerator() {
   // 实用函数：检测文字是否包含英文
   const containsEnglish = (text: string) => /[a-zA-Z]/.test(text);
   
+  // 检测字体是否支持中文
+  const isSupportChinese = (font: string): boolean => {
+    const chineseSupportedFonts = [
+      'Microsoft YaHei', 'SimSun', 'Noto Sans SC', 'Noto Sans TC', 
+      'Noto Serif SC', 'Noto Serif TC', 'Zen Old Mincho', 'Zen Maru Gothic'
+    ];
+    
+    return chineseSupportedFonts.some(supportedFont => font.includes(supportedFont));
+  };
+  
   // 获取模板的英文名称
   const getEnglishTemplateName = (chineseName: string): string => {
     const templateNameMap: {[key: string]: string} = {
@@ -768,6 +778,13 @@ export default function AdGenerator() {
     // 设置按钮样式
     const fontSize = Math.max(width * 0.035, 18) * sizeMultiplier;
     ctx.font = `bold ${fontSize}px ${ctaButtonStyle.font}`;
+    // 设置字体平滑渲染 - 通过字体设置优化渲染效果
+    if (ctx instanceof CanvasRenderingContext2D) {
+      // @ts-ignore - Canvas非标准属性
+      ctx.fontKerning = 'normal';
+      // @ts-ignore - Canvas非标准属性
+      ctx.textRendering = 'optimizeLegibility';
+    }
     const textMetrics = ctx.measureText(ctaButtonText);
     const textWidth = textMetrics.width;
     const textHeight = fontSize;
@@ -1473,13 +1490,48 @@ export default function AdGenerator() {
                             onChange={(e) => updateAdTextGroup(group.id, { font: e.target.value })}
                             className="border rounded px-2 py-1 text-sm text-gray-800"
                           >
-                            <option value="Arial, sans-serif">Arial</option>
-                            <option value="'Times New Roman', serif">Times New Roman</option>
-                            <option value="'Courier New', monospace">Courier New</option>
-                            <option value="Georgia, serif">Georgia</option>
-                            <option value="Verdana, sans-serif">Verdana</option>
-                            <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
-                            <option value="'SimSun', serif">宋体</option>
+                            {/* 基础字体 */}
+                            <optgroup label={t('基础字体')}>
+                              <option value="Arial, sans-serif">Arial</option>
+                              <option value="'Times New Roman', serif">Times New Roman</option>
+                              <option value="'Courier New', monospace">Courier New</option>
+                              <option value="Georgia, serif">Georgia</option>
+                              <option value="Verdana, sans-serif">Verdana</option>
+                              <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
+                              <option value="'SimSun', serif">宋体</option>
+                            </optgroup>
+                            
+                            {/* 现代无衬线字体 */}
+                            <optgroup label={t('现代无衬线字体')}>
+                              <option value="'Montserrat', sans-serif">Montserrat</option>
+                              <option value="'Poppins', sans-serif">Poppins</option>
+                              <option value="'Roboto', sans-serif">Roboto</option>
+                              <option value="'Open Sans', sans-serif">Open Sans</option>
+                              <option value="'Lato', sans-serif">Lato</option>
+                              <option value="'Nunito', sans-serif">Nunito</option>
+                              <option value="'Raleway', sans-serif">Raleway</option>
+                              <option value="'Inter', sans-serif">Inter</option>
+                              <option value="'DM Sans', sans-serif">DM Sans</option>
+                              <option value="'Work Sans', sans-serif">Work Sans</option>
+                            </optgroup>
+                            
+                            {/* 品牌风格字体 */}
+                            <optgroup label={t('品牌风格字体')}>
+                              <option value="'Oswald', sans-serif">Oswald</option>
+                              <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+                              <option value="'Playfair Display', serif">Playfair Display</option>
+                              <option value="'Merriweather', serif">Merriweather</option>
+                              <option value="'Archivo Black', sans-serif">Archivo Black</option>
+                              <option value="'Fjalla One', sans-serif">Fjalla One</option>
+                              <option value="'Anton', sans-serif">Anton</option>
+                            </optgroup>
+                            
+                            {/* 创意字体 */}
+                            <optgroup label={t('创意字体')}>
+                              <option value="'Pacifico', cursive">Pacifico</option>
+                              <option value="'Caveat', cursive">Caveat</option>
+                              <option value="'Comfortaa', cursive">Comfortaa</option>
+                            </optgroup>
                           </select>
                         </div>
                       </div>
@@ -1565,7 +1617,7 @@ export default function AdGenerator() {
                               placeholder={`${t('Option')} ${index + 1}`}
                               value={option}
                               onChange={(e) => updateTextOption(group.id, index, e.target.value)}
-                              className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-800 caret-blue-500"
+                              className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-800 caret-blue-500"
                             />
                             {group.options.length > 1 && (
                               <button
@@ -1577,6 +1629,16 @@ export default function AdGenerator() {
                             )}
                           </div>
                         ))}
+                        
+                        {/* 添加中文字体支持提示 */}
+                        {group.options.some(option => containsChinese(option)) && !isSupportChinese(group.font || '') && (
+                          <div className="mt-2 text-amber-600 text-xs">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            {t('当前字体可能不支持中文显示，建议选择带"✓"标记的字体')}
+                          </div>
+                        )}
                       </div>
                       
                       {showColorPicker === group.id && (
@@ -1789,7 +1851,10 @@ export default function AdGenerator() {
                     color: buttonStyle.textColor,
                     borderRadius: buttonStyle.borderRadius,
                     fontFamily: buttonStyle.font,
-                    transform: `scale(${buttonStyle.size || 1})` 
+                    fontSize: '16px',
+                    fontWeight: 'bold',
+                    WebkitFontSmoothing: 'antialiased',
+                    MozOsxFontSmoothing: 'grayscale'
                   }}
                 >
                   {buttonStyle.textOptions[0] || t('Button Text')}
@@ -1830,6 +1895,16 @@ export default function AdGenerator() {
                       )}
                     </div>
                   ))}
+                  
+                  {/* 添加中文字体支持提示 */}
+                  {buttonStyle.textOptions.some(option => containsChinese(option)) && !isSupportChinese(buttonStyle.font || '') && (
+                    <div className="mt-2 text-amber-600 text-xs">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                      </svg>
+                      {t('当前字体可能不支持中文显示，建议选择带"✓"标记的字体')}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -1909,13 +1984,55 @@ export default function AdGenerator() {
                   onChange={(e) => setButtonStyle({...buttonStyle, font: e.target.value})}
                   className="w-full border rounded px-3 py-2 text-gray-800"
                 >
-                  <option value="Arial, sans-serif">Arial</option>
-                  <option value="'Times New Roman', serif">Times New Roman</option>
-                  <option value="'Courier New', monospace">Courier New</option>
-                  <option value="Georgia, serif">Georgia</option>
-                  <option value="Verdana, sans-serif">Verdana</option>
-                  <option value="'Microsoft YaHei', sans-serif">微软雅黑</option>
-                  <option value="'SimSun', serif">宋体</option>
+                  {/* 基础字体 */}
+                  <optgroup label={t('基础字体') + ' (支持中文)'}>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="'Microsoft YaHei', sans-serif">微软雅黑 ✓</option>
+                    <option value="'SimSun', serif">宋体 ✓</option>
+                    <option value="'Noto Sans SC', sans-serif">Noto Sans SC ✓</option>
+                    <option value="'Noto Sans TC', sans-serif">Noto Sans TC ✓</option>
+                    <option value="'Noto Serif SC', serif">Noto Serif SC ✓</option>
+                    <option value="'Noto Serif TC', serif">Noto Serif TC ✓</option>
+                  </optgroup>
+                  
+                  {/* 现代无衬线字体 */}
+                  <optgroup label={t('现代无衬线字体')}>
+                    <option value="'Montserrat', sans-serif">Montserrat</option>
+                    <option value="'Poppins', sans-serif">Poppins</option>
+                    <option value="'Roboto', sans-serif">Roboto</option>
+                    <option value="'Open Sans', sans-serif">Open Sans</option>
+                    <option value="'Lato', sans-serif">Lato</option>
+                    <option value="'Nunito', sans-serif">Nunito</option>
+                    <option value="'Raleway', sans-serif">Raleway</option>
+                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'DM Sans', sans-serif">DM Sans</option>
+                    <option value="'Work Sans', sans-serif">Work Sans</option>
+                    <option value="'Noto Sans SC', 'Montserrat', sans-serif">Noto Sans SC + Montserrat ✓</option>
+                  </optgroup>
+                  
+                  {/* 品牌风格字体 */}
+                  <optgroup label={t('品牌风格字体')}>
+                    <option value="'Oswald', sans-serif">Oswald</option>
+                    <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+                    <option value="'Playfair Display', serif">Playfair Display</option>
+                    <option value="'Merriweather', serif">Merriweather</option>
+                    <option value="'Archivo Black', sans-serif">Archivo Black</option>
+                    <option value="'Fjalla One', sans-serif">Fjalla One</option>
+                    <option value="'Anton', sans-serif">Anton</option>
+                    <option value="'Zen Old Mincho', serif">Zen Old Mincho ✓</option>
+                    <option value="'Zen Maru Gothic', sans-serif">Zen Maru Gothic ✓</option>
+                  </optgroup>
+                  
+                  {/* 创意字体 */}
+                  <optgroup label={t('创意字体')}>
+                    <option value="'Pacifico', cursive">Pacifico</option>
+                    <option value="'Caveat', cursive">Caveat</option>
+                    <option value="'Comfortaa', cursive">Comfortaa</option>
+                  </optgroup>
                 </select>
               </div>
               

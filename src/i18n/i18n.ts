@@ -160,6 +160,15 @@ const zhResources = {
     'Language': '语言',
     'Chinese': '中文',
     'English': '英文',
+    
+    // 字体分类
+    '基础字体': '基础字体',
+    '现代无衬线字体': '现代无衬线字体',
+    '品牌风格字体': '品牌风格字体',
+    '创意字体': '创意字体',
+    
+    // 中文字体支持提示
+    '当前字体可能不支持中文显示，建议选择带"✓"标记的字体': '当前字体可能不支持中文显示，建议选择带"✓"标记的字体',
   }
 };
 
@@ -319,6 +328,15 @@ const enResources = {
     'Language': 'Language',
     'Chinese': 'Chinese',
     'English': 'English',
+    
+    // 字体分类
+    '基础字体': 'Basic Fonts',
+    '现代无衬线字体': 'Modern Sans-serif',
+    '品牌风格字体': 'Brand Style Fonts',
+    '创意字体': 'Creative Fonts',
+    
+    // 中文字体支持提示
+    '当前字体可能不支持中文显示，建议选择带"✓"标记的字体': 'Current font may not support Chinese characters, please select fonts marked with "✓"',
   }
 };
 
