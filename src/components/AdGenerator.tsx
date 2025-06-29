@@ -2518,18 +2518,6 @@ export default function AdGenerator() {
                     >
                       <span className="text-xl">&rsaquo;</span>
                     </button>
-                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
-                      {images.map((_, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => setCurrentImageIndex(idx)}
-                          className={`w-2 h-2 rounded-full ${
-                            currentImageIndex === idx ? 'bg-white' : 'bg-white bg-opacity-50'
-                          }`}
-                          aria-label={t('Switch to image') + ` ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
                   </>
                 )}
                 <canvas
@@ -2546,6 +2534,23 @@ export default function AdGenerator() {
                   onMouseOver={handleCanvasMouseOver}
                 />
                 </div>
+                
+                {/* 添加到图片框外部的分页指示器 */}
+                {images.length > 1 && (
+                  <div className="flex justify-center gap-1 mt-2 mb-1">
+                    {images.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentImageIndex(idx)}
+                        className={`w-2 h-2 rounded-full ${
+                          currentImageIndex === idx ? 'bg-blue-500' : 'bg-gray-300'
+                        }`}
+                        aria-label={t('Switch to image') + ` ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )}
+                
                 {/* 预览尺寸提示，移到预览图外部 */}
                 <div className="w-full flex justify-between items-center mt-2">
                   <span className="text-sm text-gray-600">
