@@ -243,7 +243,7 @@ export default function AdGenerator() {
     }
   }
   
-  // 使用防抖更新位置
+  // 使用防抖更新位置 - 恢复原功能但优化性能
   const debouncedUpdatePosition = useCallback(
     debounce((id: string, x: number, y: number) => {
       console.log("更新位置:", id, x, y);
@@ -252,7 +252,7 @@ export default function AdGenerator() {
           group.id === id ? { ...group, x, y } : group
         )
       );
-    }, 50),  // 降低防抖时间以提高响应性
+    }, 20), // 降低防抖时间以提高响应性
     []
   );
 
@@ -815,42 +815,34 @@ export default function AdGenerator() {
     }
   }
 
-  // 实时预览功能
+  // 实时预览功能 - 简化更新逻辑，恢复更稳定的渲染
   useEffect(() => {
-    const updatePreview = async () => {
-      if (!image || !canvasRef.current) return;
-      
-      try {
-        const currentPlatform = getCurrentPreviewPlatform();
-        await generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText);
-      } catch (error) {
-        console.error('预览更新失败:', error);
-      }
-    };
-    
     // 如果不是拖动中就更新预览
-    if (!draggedText && !draggedButton) {
-      updatePreview();
+    if (!draggedText && !draggedButton && image && canvasRef.current) {
+      const currentPlatform = getCurrentPreviewPlatform();
+      generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
+        .catch(err => console.error('预览更新失败:', err));
     }
-  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
+  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts]);
 
   // 确保在拖动结束后正确更新一次，保持当前选择的文字选项
   useEffect(() => {
-    if (draggedText === null && debounceUpdate !== null) {
+    if ((draggedText === null && debounceUpdate !== null) || 
+        (draggedButton === false && debounceUpdate !== null)) {
       // 重置位置状态
       setDebounceUpdate(null);
       
       // 延迟更新以确保状态已完全更新
       setTimeout(() => {
         if (image && canvasRef.current) {
+          // 刷新预览 - 直接调用预览逻辑
           const currentPlatform = getCurrentPreviewPlatform();
-          // 直接使用当前预览的文字组，避免重置回第一个选项
           generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
             .catch(err => console.error('拖动后预览更新失败:', err));
         }
       }, 50);
     }
-  }, [draggedText, debounceUpdate, generateAdImage, image, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts]);
+  }, [draggedText, draggedButton, debounceUpdate, image, generateAdImage, getCurrentPreviewPlatform, previewTexts, previewCtaText]);
 
   // 更新handleCanvasMouseDown以支持按钮拖拽
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -963,12 +955,15 @@ export default function AdGenerator() {
     if (draggedButton) {
       console.log(`拖动CTA按钮: 位置=(${x}, ${y})`);
       
-      // 更新按钮位置
+      // 立即更新按钮位置
       setButtonStyle(prev => ({
         ...prev,
         x: x,
         y: y
       }));
+      
+      // 记录当前位置用于拖动结束时使用
+      setDebounceUpdate({x, y});
       
       // 阻止事件冒泡和默认行为
       e.stopPropagation();
@@ -976,16 +971,20 @@ export default function AdGenerator() {
       return;
     }
     
-    // 处理文字拖拽
+    // 处理文字拖拽 - 改为直接更新状态，与按钮拖拽保持一致
     if (draggedText) {
       // 显示拖动信息
       console.log(`拖动中: ID=${draggedText}, 位置=(${x}, ${y})`);
       
-      // 立即更新状态以便UI反馈
+      // 记录当前位置
       setDebounceUpdate({x, y});
       
-      // 使用防抖方法
-      debouncedUpdatePosition(draggedText, x, y);
+      // 直接更新文字位置 - 不使用防抖，提高流畅度
+      setAdTextGroups(prevGroups => 
+        prevGroups.map(group => 
+          group.id === draggedText ? { ...group, x, y } : group
+        )
+      );
       
       // 阻止事件冒泡和默认行为
       e.stopPropagation();
@@ -997,6 +996,13 @@ export default function AdGenerator() {
     // 处理按钮拖拽完成
     if (draggedButton) {
       console.log(`CTA按钮拖动结束`);
+      
+      // 获取最终位置并更新按钮样式 - 其实在移动中已经更新，这里可以确保最终位置正确
+      if (canvasRef.current && debounceUpdate) {
+        const {x, y} = debounceUpdate;
+        console.log(`CTA按钮最终位置已更新: 位置=(${x}, ${y})`);
+      }
+      
       setDraggedButton(false);
       
       // 阻止事件冒泡和默认行为
@@ -1012,14 +1018,14 @@ export default function AdGenerator() {
       if (canvasRef.current && debounceUpdate) {
         const {x, y} = debounceUpdate;
         
-        // 立即应用最终位置，不使用防抖
+        // 立即应用最终位置
         setAdTextGroups(prevGroups => 
           prevGroups.map(group => 
             group.id === draggedText ? { ...group, x, y } : group
           )
         );
         
-        console.log(`最终位置已更新: ID=${draggedText}, 位置=(${x}, ${y})`);
+        console.log(`文字最终位置已更新: ID=${draggedText}, 位置=(${x}, ${y})`);
       }
       
       // 重置拖动状态
@@ -1041,23 +1047,20 @@ export default function AdGenerator() {
     }
   };
 
-  // 手动刷新预览功能
+  // 手动刷新预览功能 - 使用当前选中的文字选项
   const refreshPreview = useCallback(() => {
     if (!image || !canvasRef.current) return;
       
     try {
-      const combinations = generateAllCombinations();
-      if (combinations.length > 0) {
-        const firstCombination = combinations[0];
-        const currentPlatform = getCurrentPreviewPlatform()
-        console.log("手动刷新预览...");
-        generateAdImage(currentPlatform.width, currentPlatform.height, 'png', firstCombination.texts, previewCtaText)
-          .catch(err => console.error('预览刷新失败:', err));
-      }
+      const currentPlatform = getCurrentPreviewPlatform();
+      console.log("手动刷新预览...");
+      // 使用当前预览文字，确保选项保持一致
+      generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
+        .catch(err => console.error('预览刷新失败:', err));
     } catch (error) {
       console.error('手动刷新预览失败:', error);
     }
-  }, [image, canvasRef, generateAllCombinations, generateAdImage, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes]);
+  }, [image, canvasRef, generateAdImage, getCurrentPreviewPlatform, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts, previewCtaText]);
 
   // 1. 在adTextGroups变化时自动同步previewTextIndexes长度，并确保每组索引不超过当前选项数-1
   useEffect(() => {
