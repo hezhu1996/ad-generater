@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { HexColorPicker } from 'react-colorful'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
+import { useTranslation } from 'react-i18next'
 
 // 添加防抖功能
 function debounce<T extends (...args: any[]) => any>(
@@ -58,6 +59,8 @@ interface ButtonStyle {
 }
 
 export default function AdGenerator() {
+  const { t, i18n } = useTranslation();
+  
   const [images, setImages] = useState<string[]>([])
   const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
   const [adTextGroups, setAdTextGroups] = useState<AdTextGroup[]>([])
@@ -66,12 +69,28 @@ export default function AdGenerator() {
     textColor: '#ffffff',
     borderRadius: '8px',
     padding: '12px 24px',
-    textOptions: ['立即购买'],
+    textOptions: [i18n.language === 'en' ? 'Buy Now' : '立即购买'],
     font: 'Arial, sans-serif',
     x: 50, // 默认居中
     y: 75, // 默认在画布下部
     size: 1 // 默认大小比例
   })
+  
+  // 当语言变化时更新按钮文字
+  useEffect(() => {
+    // 保存用户自定义的文字选项
+    const userOptions = buttonStyle.textOptions;
+    
+    // 如果当前选项只有一个且是默认值，则根据语言更新
+    if (userOptions.length === 1 && 
+        (userOptions[0] === '立即购买' || userOptions[0] === 'Buy Now')) {
+      setButtonStyle(prev => ({
+        ...prev,
+        textOptions: [i18n.language === 'en' ? 'Buy Now' : '立即购买']
+      }));
+    }
+  }, [i18n.language]);
+  
   const [isGenerating, setIsGenerating] = useState(false)
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null)
   const [draggedText, setDraggedText] = useState<string | null>(null)
@@ -105,47 +124,48 @@ export default function AdGenerator() {
   // 平台配置
   const allPlatforms = [
     // Facebook
-    { key: 'Facebook_Square', name: 'Facebook 方形', defaultWidth: 1080, defaultHeight: 1080, category: 'Facebook', icon: '📘' },
-    { key: 'Facebook_Landscape', name: 'Facebook 横向', defaultWidth: 1200, defaultHeight: 630, category: 'Facebook', icon: '📘' },
+    { key: 'Facebook_Square', name: `Facebook ${t('方形')}`, defaultWidth: 1080, defaultHeight: 1080, category: 'Facebook', icon: '📘' },
+    { key: 'Facebook_Landscape', name: `Facebook ${t('横向')}`, defaultWidth: 1200, defaultHeight: 630, category: 'Facebook', icon: '📘' },
     
     // Google Ads
-    { key: 'Google_Ads_Square', name: 'Google Ads 方形', defaultWidth: 1200, defaultHeight: 1200, category: 'Google Ads', icon: '🔍' },
-    { key: 'Google_Ads_Landscape', name: 'Google Ads 横向', defaultWidth: 1200, defaultHeight: 628, category: 'Google Ads', icon: '🔍' },
+    { key: 'Google_Ads_Square', name: `Google Ads ${t('方形')}`, defaultWidth: 1200, defaultHeight: 1200, category: 'Google Ads', icon: '🔍' },
+    { key: 'Google_Ads_Landscape', name: `Google Ads ${t('横向')}`, defaultWidth: 1200, defaultHeight: 628, category: 'Google Ads', icon: '🔍' },
     
     // Instagram
-    { key: 'Instagram_Square', name: 'Instagram 方形', defaultWidth: 1080, defaultHeight: 1080, category: 'Instagram', icon: '📷' },
-    { key: 'Instagram_Story', name: 'Instagram Story', defaultWidth: 1080, defaultHeight: 1920, category: 'Instagram', icon: '📷' },
+    { key: 'Instagram_Square', name: `Instagram ${t('方形')}`, defaultWidth: 1080, defaultHeight: 1080, category: 'Instagram', icon: '📷' },
+    { key: 'Instagram_Story', name: `Instagram ${t('Story')}`, defaultWidth: 1080, defaultHeight: 1920, category: 'Instagram', icon: '📷' },
     
     // LinkedIn
-    { key: 'LinkedIn_Single', name: 'LinkedIn 广告', defaultWidth: 1200, defaultHeight: 627, category: 'LinkedIn', icon: '💼' },
+    { key: 'LinkedIn_Single', name: `LinkedIn ${t('广告')}`, defaultWidth: 1200, defaultHeight: 627, category: 'LinkedIn', icon: '💼' },
     
     // Twitter/X
-    { key: 'Twitter_Post', name: 'Twitter 广告', defaultWidth: 1200, defaultHeight: 675, category: 'Twitter', icon: '🐦' },
+    { key: 'Twitter_Post', name: `Twitter ${t('广告')}`, defaultWidth: 1200, defaultHeight: 675, category: 'Twitter', icon: '🐦' },
     
     // Amazon (新增)
-    { key: 'Amazon_Mobile', name: 'Amazon 移动端', defaultWidth: 600, defaultHeight: 500, category: 'Amazon', icon: '🛒' },
-    { key: 'Amazon_Desktop', name: 'Amazon 桌面端', defaultWidth: 1000, defaultHeight: 500, category: 'Amazon', icon: '🛒' },
-    { key: 'Amazon_Banner', name: 'Amazon 横幅', defaultWidth: 1500, defaultHeight: 300, category: 'Amazon', icon: '🛒' },
+    { key: 'Amazon_Mobile', name: `Amazon ${t('移动端')}`, defaultWidth: 600, defaultHeight: 500, category: 'Amazon', icon: '🛒' },
+    { key: 'Amazon_Desktop', name: `Amazon ${t('桌面端')}`, defaultWidth: 1000, defaultHeight: 500, category: 'Amazon', icon: '🛒' },
+    { key: 'Amazon_Banner', name: `Amazon ${t('横幅')}`, defaultWidth: 1500, defaultHeight: 300, category: 'Amazon', icon: '🛒' },
     
     // eBay (新增)
-    { key: 'eBay_Standard', name: 'eBay 标准', defaultWidth: 900, defaultHeight: 900, category: 'eBay', icon: '🏷️' },
-    { key: 'eBay_Billboard', name: 'eBay 广告牌', defaultWidth: 1200, defaultHeight: 270, category: 'eBay', icon: '🏷️' },
-    { key: 'eBay_Mobile', name: 'eBay 移动端', defaultWidth: 660, defaultHeight: 440, category: 'eBay', icon: '🏷️' },
+    { key: 'eBay_Standard', name: `eBay ${t('标准')}`, defaultWidth: 900, defaultHeight: 900, category: 'eBay', icon: '🏷️' },
+    { key: 'eBay_Billboard', name: `eBay ${t('广告牌')}`, defaultWidth: 1200, defaultHeight: 270, category: 'eBay', icon: '🏷️' },
+    { key: 'eBay_Mobile', name: `eBay ${t('移动端')}`, defaultWidth: 660, defaultHeight: 440, category: 'eBay', icon: '🏷️' },
     
     // TikTok (新增)
-    { key: 'TikTok_Feed', name: 'TikTok Feed', defaultWidth: 1080, defaultHeight: 1920, category: 'TikTok', icon: '📱' },
-    { key: 'TikTok_Splash', name: 'TikTok 开屏', defaultWidth: 1080, defaultHeight: 1920, category: 'TikTok', icon: '📱' },
-    { key: 'TikTok_Display', name: 'TikTok 展示', defaultWidth: 1200, defaultHeight: 628, category: 'TikTok', icon: '📱' },
+    { key: 'TikTok_Feed', name: `TikTok ${t('Feed')}`, defaultWidth: 1080, defaultHeight: 1920, category: 'TikTok', icon: '📱' },
+    { key: 'TikTok_Splash', name: `TikTok ${t('开屏')}`, defaultWidth: 1080, defaultHeight: 1920, category: 'TikTok', icon: '📱' },
+    { key: 'TikTok_Display', name: `TikTok ${t('展示')}`, defaultWidth: 1200, defaultHeight: 628, category: 'TikTok', icon: '📱' },
     
     // Reddit (新增)
-    { key: 'Reddit_Feed', name: 'Reddit Feed', defaultWidth: 1200, defaultHeight: 628, category: 'Reddit', icon: '🔶' },
-    { key: 'Reddit_Card', name: 'Reddit 卡片', defaultWidth: 400, defaultHeight: 300, category: 'Reddit', icon: '🔶' },
-    { key: 'Reddit_Mobile', name: 'Reddit 移动端', defaultWidth: 640, defaultHeight: 640, category: 'Reddit', icon: '🔶' },
+    { key: 'Reddit_Feed', name: `Reddit ${t('Feed')}`, defaultWidth: 1200, defaultHeight: 628, category: 'Reddit', icon: '🔶' },
+    { key: 'Reddit_Card', name: `Reddit ${t('卡片')}`, defaultWidth: 400, defaultHeight: 300, category: 'Reddit', icon: '🔶' },
+    { key: 'Reddit_Mobile', name: `Reddit ${t('移动端')}`, defaultWidth: 640, defaultHeight: 640, category: 'Reddit', icon: '🔶' },
+    
     
     // Etsy (新增)
-    { key: 'Etsy_Square', name: 'Etsy 商品主图', defaultWidth: 1000, defaultHeight: 1000, category: 'Etsy', icon: '🛍️' },
-    { key: 'Etsy_Banner', name: 'Etsy 店铺横幅', defaultWidth: 1200, defaultHeight: 300, category: 'Etsy', icon: '🛍️' },
-    { key: 'Etsy_Promo', name: 'Etsy 促销图', defaultWidth: 1200, defaultHeight: 628, category: 'Etsy', icon: '🛍️' }
+    { key: 'Etsy_Square', name: `Etsy ${t('商品主图')}`, defaultWidth: 1000, defaultHeight: 1000, category: 'Etsy', icon: '🛍️' },
+    { key: 'Etsy_Banner', name: `Etsy ${t('店铺横幅')}`, defaultWidth: 1200, defaultHeight: 300, category: 'Etsy', icon: '🛍️' },
+    { key: 'Etsy_Promo', name: `Etsy ${t('促销图')}`, defaultWidth: 1200, defaultHeight: 628, category: 'Etsy', icon: '🛍️' }
   ]
   
   // 添加平台选择状态 - 默认全选
@@ -1179,7 +1199,7 @@ export default function AdGenerator() {
         <div className="lg:col-span-2 space-y-4 lg:space-y-6">
           {/* 图片上传 */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">上传产品图片</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-800">{t('Upload Product Images')}</h2>
             <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors bg-transparent">
               {images.length > 0 ? (
                 <div className="space-y-2">
@@ -1193,7 +1213,7 @@ export default function AdGenerator() {
                             handlePrevImage();
                           }}
                           className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
-                          aria-label="上一张图片"
+                          aria-label={t('Previous image')}
                         >
                           <span className="text-xl">&lsaquo;</span>
                         </button>
@@ -1203,7 +1223,7 @@ export default function AdGenerator() {
                             handleNextImage();
                           }}
                           className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
-                          aria-label="下一张图片"
+                          aria-label={t('Next image')}
                         >
                           <span className="text-xl">&rsaquo;</span>
                         </button>
@@ -1212,7 +1232,7 @@ export default function AdGenerator() {
                     
                     <img 
                       src={images[currentImageIndex]} 
-                      alt="Uploaded" 
+                      alt={t('Uploaded')} 
                       className="max-h-32 mx-auto rounded cursor-pointer" 
                       onClick={() => fileInputRef.current?.click()}
                     />
@@ -1235,14 +1255,14 @@ export default function AdGenerator() {
                           className={`w-2 h-2 rounded-full ${
                             currentImageIndex === idx ? 'bg-blue-500' : 'bg-gray-300'
                           }`}
-                          aria-label={`切换到图片 ${idx + 1}`}
+                          aria-label={t('Switch to image') + ` ${idx + 1}`}
                         />
                       ))}
                     </div>
                   )}
                   
                   <div className="flex justify-between items-center text-sm text-gray-600">
-                    <span>已上传 {images.length}/5 张图片</span>
+                    <span>{t('Uploaded')} {images.length}/5 {t('Images')}</span>
                     <div className="flex space-x-2">
                       {/* 添加继续上传按钮 */}
                       {images.length < 5 && (
@@ -1261,7 +1281,7 @@ export default function AdGenerator() {
                             }
                           }}
                         >
-                          继续添加
+                          {t('Add More')}
                         </button>
                       )}
                       <button 
@@ -1279,7 +1299,7 @@ export default function AdGenerator() {
                           }
                         }}
                       >
-                        全部替换
+                        {t('Replace All')}
                       </button>
                     </div>
                   </div>
@@ -1292,8 +1312,8 @@ export default function AdGenerator() {
                 >
                   <div className="space-y-2">
                     <div className="text-4xl text-gray-400">📷</div>
-                    <p className="text-gray-600">点击或拖拽上传图片</p>
-                    <p className="text-sm text-gray-400">支持 JPG, PNG 格式 (最多5张)</p>
+                    <p className="text-gray-600">{t('Click or Drag to Upload')}</p>
+                    <p className="text-sm text-gray-400">{t('Supports JPG, PNG (Max 5)')}</p>
                   </div>
                 </button>
               )}
@@ -1311,12 +1331,12 @@ export default function AdGenerator() {
           {/* 广告文字设置 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">广告文字组</h2>
+              <h2 className="text-xl font-bold text-gray-800">{t('Ad Text Groups')}</h2>
               <button
                 onClick={addAdTextGroup}
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
               >
-                添加文字组
+                {t('Add Text Group')}
               </button>
             </div>
             
@@ -1497,17 +1517,17 @@ export default function AdGenerator() {
 
           {/* 按钮样式设置 */}
           <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">CTA 按钮样式</h2>
+            <h2 className="text-xl font-bold mb-4 text-gray-800">{t('CTA Button Style')}</h2>
             <div className="space-y-4">
               {/* CTA 文字选项 */}
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-medium text-gray-700">按钮文字选项</label>
+                  <label className="block text-sm font-medium text-gray-700">{t('Button Text Options')}</label>
                   <button
                     onClick={addCtaOption}
                     className="text-blue-600 hover:text-blue-800 font-medium text-sm"
                   >
-                    + 添加选项
+                    {t('Add Option')}
                   </button>
                 </div>
                 
@@ -1516,7 +1536,7 @@ export default function AdGenerator() {
                     <div key={index} className="flex items-center space-x-2">
                       <input
                         type="text"
-                        placeholder={`CTA 选项 ${index + 1}`}
+                        placeholder={`${t('Option')} ${index + 1}`}
                         value={option}
                         onChange={(e) => updateCtaOption(index, e.target.value)}
                         className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-500 text-gray-800 caret-blue-500"
@@ -1535,14 +1555,14 @@ export default function AdGenerator() {
               </div>
               
               <div>
-                <span className="block text-sm font-medium mb-2 text-gray-700">背景颜色</span>
+                <span className="block text-sm font-medium mb-2 text-gray-700">{t('Background Color')}</span>
                 <div className="flex items-center space-x-2">
                   <button
                     type="button"
                     className="w-10 h-10 rounded border-2 border-gray-300 cursor-pointer shadow-sm"
                     style={{ backgroundColor: buttonStyle.backgroundColor }}
                     onClick={() => setShowColorPicker(showColorPicker === 'button-bg' ? null : 'button-bg')}
-                    aria-label="选择按钮背景颜色"
+                    aria-label={t('Select Button Background Color')}
                   />
                   <input
                     type="text"
@@ -1562,21 +1582,21 @@ export default function AdGenerator() {
                       onClick={() => setShowColorPicker(null)}
                       className="mt-2 w-full bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300"
                     >
-                      完成
+                      {t('Done')}
                     </button>
                   </div>
                 )}
               </div>
               
               <div>
-                <span className="block text-sm font-medium mb-2 text-gray-700">文字颜色</span>
+                <span className="block text-sm font-medium mb-2 text-gray-700">{t('Text Color')}</span>
                 <div className="flex items-center space-x-2">
                   <button
                     type="button"
                     className="w-10 h-10 rounded border-2 border-gray-300 cursor-pointer shadow-sm"
                     style={{ backgroundColor: buttonStyle.textColor }}
                     onClick={() => setShowColorPicker(showColorPicker === 'button-text' ? null : 'button-text')}
-                    aria-label="选择按钮文字颜色"
+                    aria-label={t('Select Button Text Color')}
                   />
                   <input
                     type="text"
@@ -1596,14 +1616,14 @@ export default function AdGenerator() {
                       onClick={() => setShowColorPicker(null)}
                       className="mt-2 w-full bg-gray-200 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-300"
                     >
-                      完成
+                      {t('Done')}
                     </button>
                   </div>
                 )}
               </div>
               
               <div>
-                <label htmlFor="button-font-select" className="block text-sm font-medium mb-2 text-gray-700">按钮字体</label>
+                <label htmlFor="button-font-select" className="block text-sm font-medium mb-2 text-gray-700">{t('Button Font')}</label>
                 <select
                   id="button-font-select"
                   value={buttonStyle.font}
@@ -1621,28 +1641,28 @@ export default function AdGenerator() {
               </div>
               
               <div>
-                <label htmlFor="border-radius-select" className="block text-sm font-medium mb-2 text-gray-700">圆角大小</label>
+                <label htmlFor="border-radius-select" className="block text-sm font-medium mb-2 text-gray-700">{t('Border Radius')}</label>
                 <select
                   id="border-radius-select"
                   value={buttonStyle.borderRadius}
                   onChange={(e) => setButtonStyle({...buttonStyle, borderRadius: e.target.value})}
                   className="w-full border rounded px-3 py-2 text-gray-800"
                 >
-                  <option value="0px">无圆角</option>
-                  <option value="4px">小圆角</option>
-                  <option value="8px">中等圆角</option>
-                  <option value="16px">大圆角</option>
-                  <option value="50px">胶囊形</option>
+                  <option value="0px">{t('No Radius')}</option>
+                  <option value="4px">{t('Small Radius')}</option>
+                  <option value="8px">{t('Medium Radius')}</option>
+                  <option value="16px">{t('Large Radius')}</option>
+                  <option value="50px">{t('Pill Shape')}</option>
                 </select>
               </div>
 
               {/* 添加按钮位置控制 */}
               <div className="bg-amber-50 p-3 rounded-lg">
-                <h3 className="text-md font-medium mb-3 text-gray-800">按钮位置与大小 <span className="text-amber-600 text-sm">(也可在预览中直接拖动)</span></h3>
+                <h3 className="text-md font-medium mb-3 text-gray-800">{t('Button Position and Size')} <span className="text-amber-600 text-sm">({t('Drag in Preview')})</span></h3>
                 <div className="grid grid-cols-2 gap-4 mb-3">
                   <div>
                     <label htmlFor="button-x" className="block text-sm font-medium mb-1 text-gray-700">
-                      X位置: {buttonStyle.x !== undefined ? buttonStyle.x : 50}%
+                      {t('X Position')}: {buttonStyle.x !== undefined ? buttonStyle.x : 50}%
                     </label>
                     <input
                       id="button-x"
@@ -1657,7 +1677,7 @@ export default function AdGenerator() {
                   
                   <div>
                     <label htmlFor="button-y" className="block text-sm font-medium mb-1 text-gray-700">
-                      Y位置: {buttonStyle.y !== undefined ? buttonStyle.y : 75}%
+                      {t('Y Position')}: {buttonStyle.y !== undefined ? buttonStyle.y : 75}%
                     </label>
                     <input
                       id="button-y"
@@ -1673,7 +1693,7 @@ export default function AdGenerator() {
                 
                 <div>
                   <label htmlFor="button-size" className="block text-sm font-medium mb-1 text-gray-700">
-                    按钮大小: {Math.round(((buttonStyle.size === undefined ? 1 : buttonStyle.size) * 100))}%
+                    {t('Button Size')}: {Math.round(((buttonStyle.size === undefined ? 1 : buttonStyle.size) * 100))}%
                   </label>
                   <div className="flex items-center space-x-2">
                     <input
@@ -1697,7 +1717,7 @@ export default function AdGenerator() {
                       }}
                       className="bg-amber-200 hover:bg-amber-300 text-xs px-2 py-1 rounded"
                     >
-                      重置
+                      {t('Reset')}
                     </button>
                   </div>
                 </div>
@@ -1708,14 +1728,14 @@ export default function AdGenerator() {
           {/* 平台选择设置 - 美观紧凑版 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">平台选择</h2>
+              <h2 className="text-xl font-bold text-gray-800">{t('Platform Selection')}</h2>
               <div className="flex items-center space-x-2">
-                <span className="text-xs text-gray-500">已选择 {getSelectedPlatformCount()}/{allPlatforms.length}</span>
+                <span className="text-xs text-gray-500">{t('Selected')} {getSelectedPlatformCount()}/{allPlatforms.length}</span>
                 <button
                   onClick={handleSelectAll}
                   className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
                 >
-                  {Object.values(selectedPlatforms).every(v => v) ? '取消全选' : '全选'}
+                  {Object.values(selectedPlatforms).every(v => v) ? t('Unselect All') : t('Select All')}
                 </button>
               </div>
             </div>
@@ -1765,7 +1785,7 @@ export default function AdGenerator() {
                                   {currentSize.width}×{currentSize.height}
                                 </span>
                                 {isCustomSize && (
-                                  <span className="text-xs text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">自定义</span>
+                                  <span className="text-xs text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">{t('自定义')}</span>
                                 )}
                               </div>
                               
@@ -1773,7 +1793,7 @@ export default function AdGenerator() {
                               <button
                                 onClick={() => setEditingSize(editingSize === platform.key ? null : platform.key)}
                                 className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
-                                title="编辑尺寸"
+                                title={t('编辑尺寸')}
                               >
                                 ✏️
                               </button>
@@ -1783,7 +1803,7 @@ export default function AdGenerator() {
                                 <button
                                   onClick={() => handleResetSize(platform.key)}
                                   className="text-xs text-gray-500 hover:text-gray-700 px-1 py-1 rounded hover:bg-gray-100 transition-colors"
-                                  title="重置为默认尺寸"
+                                  title={t('重置为默认尺寸')}
                                 >
                                   ↺
                                 </button>
@@ -1796,7 +1816,7 @@ export default function AdGenerator() {
                             <div className="mt-2 pt-2 border-t border-gray-200 bg-gray-50 rounded p-2">
                               <div className="flex items-center space-x-2">
                                 <div className="flex items-center space-x-1">
-                                  <label className="text-xs text-gray-600">宽:</label>
+                                  <label className="text-xs text-gray-600">{t('宽:')}:</label>
                                   <input
                                     type="number"
                                     value={currentSize.width}
@@ -1808,7 +1828,7 @@ export default function AdGenerator() {
                                 </div>
                                 <span className="text-xs text-gray-400">×</span>
                                 <div className="flex items-center space-x-1">
-                                  <label className="text-xs text-gray-600">高:</label>
+                                  <label className="text-xs text-gray-600">{t('高:')}:</label>
                                   <input
                                     type="number"
                                     value={currentSize.height}
@@ -1822,7 +1842,7 @@ export default function AdGenerator() {
                                   onClick={() => setEditingSize(null)}
                                   className="text-xs text-green-600 hover:text-green-800 px-2 py-1 border border-green-200 rounded hover:bg-green-50"
                                 >
-                                  完成
+                                  {t('完成')}
                                 </button>
                               </div>
                             </div>
@@ -1839,16 +1859,16 @@ export default function AdGenerator() {
             <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-blue-700">
-                  已选择 <span className="font-semibold">{getSelectedPlatformCount()}</span> 个平台
+                  {t('已选择')} <span className="font-semibold">{getSelectedPlatformCount()}</span> {t('个平台')}
                 </p>
                 <div className="text-xs text-blue-600">
                   {getSelectedPlatformCount() > 0 && (
                     <span>
-                      预计生成 {(() => {
+                      {t('预计生成')} {(() => {
                         const textCombinations = adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)
                         const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
                         return textCombinations * ctaCombinations * getSelectedPlatformCount()
-                      })()} 张图片
+                      })()} {t('张图片')}
                     </span>
                   )}
                 </div>
@@ -1858,23 +1878,23 @@ export default function AdGenerator() {
 
           {/* 组合信息显示 */}
           <div className="bg-blue-50 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-blue-800 mb-2">生成预览</h3>
+            <h3 className="text-lg font-semibold text-blue-800 mb-2">{t('Generation Preview')}</h3>
             <div className="text-sm text-blue-700 space-y-1">
-              <p>📝 文字组数量: {adTextGroups.length}</p>
-              <p>🔄 文字组合数: {adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)}</p>
-              <p>🎯 CTA 选项数: {buttonStyle.textOptions.filter(opt => opt.trim()).length}</p>
-              <p>📊 总组合数: {(() => {
+              <p>📝 {t('Text Group Count')}: {adTextGroups.length}</p>
+              <p>🔄 {t('Text Combination Count')}: {adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)}</p>
+              <p>🎯 {t('CTA Option Count')}: {buttonStyle.textOptions.filter(opt => opt.trim()).length}</p>
+              <p>📊 {t('Total Combination Count')}: {(() => {
                 const textCombinations = adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)
                 const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
                 return textCombinations * ctaCombinations
               })()}</p>
-              <p>🖼️ 总图片数: {(() => {
+              <p>🖼️ {t('Total Image Count')}: {(() => {
                 const textCombinations = adTextGroups.reduce((total, group) => total * Math.max(1, group.options.filter(opt => opt.trim()).length), 1)
                 const ctaCombinations = Math.max(1, buttonStyle.textOptions.filter(opt => opt.trim()).length)
                 const totalCombinations = textCombinations * ctaCombinations
                 // 修复：使用 images.length 而不是硬编码值
                 return totalCombinations * getSelectedPlatformCount() * images.length 
-              })()} (共 {getSelectedPlatformCount()} 个平台，{images.length} 张产品图片)</p>
+              })()} ({t('Platforms')}: {getSelectedPlatformCount()}, {t('Product Images')}: {images.length})</p>
             </div>
           </div>
 
@@ -1884,23 +1904,23 @@ export default function AdGenerator() {
             disabled={images.length === 0 || (adTextGroups.length === 0 && buttonStyle.textOptions.every(opt => !opt.trim())) || isGenerating || getSelectedPlatformCount() === 0}
             className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
-            {isGenerating ? '生成中...' : '生成所有组合的广告图片'}
+            {isGenerating ? t('Generating...') : t('Generate All Ad Images')}
           </button>
         </div>
 
         {/* 右侧预览 */}
         <div className="bg-white rounded-lg shadow-md p-4 sticky top-4 h-fit max-h-[calc(100vh-1rem)] overflow-y-auto preview-scrollbar">
           <h2 className="text-xl font-bold mb-4 text-gray-800 sticky top-0 bg-white pb-2 z-10 border-b border-gray-200 flex items-center justify-between">
-            <span>预览</span>
+            <span>{t('Preview')}</span>
             <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full flex items-center">
-              📌 跟随滚动
+              📌 {t('Scroll Following')}
             </span>
           </h2>
           <div className="space-y-3">
             {/* 预览平台选择器 */}
             <div className="bg-gray-50 rounded-lg p-2">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-gray-700">预览平台:</span>
+                <span className="text-sm font-medium text-gray-700">{t('预览平台:')}</span>
                 <span className="text-xs text-gray-500">
                   {getCurrentPreviewPlatform().width} × {getCurrentPreviewPlatform().height}
                 </span>
@@ -1914,7 +1934,7 @@ export default function AdGenerator() {
                       : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50'
                   }`}
                 >
-                  默认预览
+                  {t('默认预览')}
                 </button>
                 {getSelectedPlatforms().map(platform => (
                   <button
@@ -1937,7 +1957,7 @@ export default function AdGenerator() {
                 
                 return (
                   <div key={group.id} className="flex flex-wrap gap-1 mt-1">
-                    <span className="text-xs text-gray-700 mr-1">文字选项:</span>
+                    <span className="text-xs text-gray-700 mr-1">{t('文字选项:')}</span>
                     {validOptions.map((option, optIdx) => (
                       <button
                         key={optIdx}
@@ -1973,7 +1993,7 @@ export default function AdGenerator() {
                           : 'bg-white text-gray-600 border-gray-300 hover:bg-amber-50'
                       }`}
                     >
-                      {cta || `按钮${idx+1}`}
+                      {cta || `${t('Button')}${idx+1}`}
                     </button>
                   ))}
                 </div>
@@ -1996,14 +2016,14 @@ export default function AdGenerator() {
                     <button 
                       onClick={handlePrevImage}
                       className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
-                      aria-label="上一张图片"
+                      aria-label={t('Previous image')}
                     >
                       <span className="text-xl">&lsaquo;</span>
                     </button>
                     <button 
                       onClick={handleNextImage}
                       className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
-                      aria-label="下一张图片"
+                      aria-label={t('Next image')}
                     >
                       <span className="text-xl">&rsaquo;</span>
                     </button>
@@ -2015,7 +2035,7 @@ export default function AdGenerator() {
                           className={`w-2 h-2 rounded-full ${
                             currentImageIndex === idx ? 'bg-white' : 'bg-white bg-opacity-50'
                           }`}
-                          aria-label={`切换到图片 ${idx + 1}`}
+                          aria-label={t('Switch to image') + ` ${idx + 1}`}
                         />
                       ))}
                     </div>
@@ -2038,7 +2058,7 @@ export default function AdGenerator() {
                 {/* 预览尺寸提示，移到预览图外部 */}
                 <div className="w-full flex justify-between items-center mt-2">
                   <span className="text-sm text-gray-600">
-                    {images.length > 0 ? `图片 ${currentImageIndex + 1}/${images.length}` : '未上传图片'}
+                    {images.length > 0 ? `${t('Image')} ${currentImageIndex + 1}/${images.length}` : t('No Image Uploaded')}
                   </span>
                   <span className="bg-black text-white text-base rounded-xl px-4 py-1 font-medium shadow">
                     {getCurrentPreviewPlatform().name} ({getCurrentPreviewPlatform().width}×{getCurrentPreviewPlatform().height})
@@ -2051,7 +2071,7 @@ export default function AdGenerator() {
             <div className="text-sm text-gray-600">
               {getSelectedPlatformCount() > 0 ? (
                 <div>
-                  <p className="font-medium mb-1">✅ 已选择的平台:</p>
+                  <p className="font-medium mb-1">{t('已选择的平台:')} ✅</p>
                   {getSelectedPlatforms().map(platform => {
                     const currentSize = customSizes[platform.key]
                     const isCustomSize = currentSize.width !== platform.defaultWidth || currentSize.height !== platform.defaultHeight
@@ -2061,7 +2081,7 @@ export default function AdGenerator() {
                           <span>• {platform.name}</span>
                           <span className="text-gray-500 ml-1">({currentSize.width}×{currentSize.height})</span>
                           {isCustomSize && (
-                            <span className="text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">自定义</span>
+                            <span className="text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">{t('自定义')}</span>
                           )}
                         </span>
                 </div>
@@ -2069,7 +2089,7 @@ export default function AdGenerator() {
                   })}
               </div>
               ) : (
-                <p className="text-red-500">⚠️ 请至少选择一个平台</p>
+                <p className="text-red-500">⚠️ {t('请至少选择一个平台')}</p>
               )}
             </div>
           </div>
