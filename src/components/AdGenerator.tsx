@@ -1174,29 +1174,91 @@ export default function AdGenerator() {
           {/* 图片上传 */}
           <div className="bg-white rounded-lg shadow-md p-6">
             <h2 className="text-xl font-bold mb-4 text-gray-800">上传产品图片</h2>
-            <button
-              type="button"
-              className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors bg-transparent"
-              onClick={() => fileInputRef.current?.click()}
-            >
+            <div className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors bg-transparent">
               {images.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="relative">
-                    <img src={images[currentImageIndex]} alt="Uploaded" className="max-h-32 mx-auto rounded" />
+                  <div className="relative mx-auto max-w-sm">
+                    {/* 左右箭头导航按钮 */}
+                    {images.length > 1 && (
+                      <>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handlePrevImage();
+                          }}
+                          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
+                          aria-label="上一张图片"
+                        >
+                          <span className="text-xl">&lsaquo;</span>
+                        </button>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNextImage();
+                          }}
+                          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
+                          aria-label="下一张图片"
+                        >
+                          <span className="text-xl">&rsaquo;</span>
+                        </button>
+                      </>
+                    )}
+                    
+                    <img 
+                      src={images[currentImageIndex]} 
+                      alt="Uploaded" 
+                      className="max-h-32 mx-auto rounded cursor-pointer" 
+                      onClick={() => fileInputRef.current?.click()}
+                    />
+                    
                     <span className="absolute bottom-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-tl rounded-br">
                       {currentImageIndex + 1}/{images.length}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">已上传 {images.length} 张图片，点击更换</p>
+                  
+                  {/* 底部指示器 */}
+                  {images.length > 1 && (
+                    <div className="flex justify-center gap-1 mt-2">
+                      {images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCurrentImageIndex(idx);
+                          }}
+                          className={`w-2 h-2 rounded-full ${
+                            currentImageIndex === idx ? 'bg-blue-500' : 'bg-gray-300'
+                          }`}
+                          aria-label={`切换到图片 ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
+                  <p className="text-sm text-gray-600">
+                    已上传 {images.length} 张图片
+                    <button 
+                      className="ml-2 text-blue-500 hover:text-blue-700 underline"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      更换
+                    </button>
+                  </p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  <div className="text-4xl text-gray-400">📷</div>
-                  <p className="text-gray-600">点击或拖拽上传图片</p>
-                  <p className="text-sm text-gray-400">支持 JPG, PNG 格式 (最多5张)</p>
-                </div>
+                <button
+                  type="button"
+                  className="w-full h-full bg-transparent"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="space-y-2">
+                    <div className="text-4xl text-gray-400">📷</div>
+                    <p className="text-gray-600">点击或拖拽上传图片</p>
+                    <p className="text-sm text-gray-400">支持 JPG, PNG 格式 (最多5张)</p>
+                  </div>
+                </button>
               )}
-            </button>
+            </div>
             <input
               ref={fileInputRef}
               type="file"
