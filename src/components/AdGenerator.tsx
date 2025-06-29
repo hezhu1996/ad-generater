@@ -1719,7 +1719,36 @@ export default function AdGenerator() {
                   </button>
                 ))}
               </div>
-              {/* 新增：CTA文案选择器，仅在有多个文案时显示 */}
+              {/* 新增：文字组选择器，为每个有多个选项的文字组显示选择器 */}
+              {adTextGroups.map((group, groupIdx) => {
+                const validOptions = group.options.filter(opt => opt.trim());
+                if (validOptions.length <= 1) return null;
+                
+                return (
+                  <div key={group.id} className="flex flex-wrap gap-1 mt-1">
+                    <span className="text-xs text-gray-700 mr-1">文字选项:</span>
+                    {validOptions.map((option, optIdx) => (
+                      <button
+                        key={optIdx}
+                        onClick={() => {
+                          const newIndexes = [...previewTextIndexes];
+                          newIndexes[groupIdx] = optIdx;
+                          setPreviewTextIndexes(newIndexes);
+                        }}
+                        className={`px-2 py-1 text-xs rounded-full border transition-colors ${
+                          (previewTextIndexes[groupIdx] || 0) === optIdx
+                            ? 'bg-blue-500 text-white border-blue-500'
+                            : 'bg-white text-gray-600 border-gray-300 hover:bg-blue-50'
+                        }`}
+                      >
+                        {option.length > 15 ? option.substring(0, 15) + '...' : option}
+                      </button>
+                    ))}
+                  </div>
+                );
+              })}
+              
+              {/* CTA文案选择器，仅在有多个文案时显示 */}
               {buttonStyle.textOptions.filter(opt => opt.trim()).length > 1 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   <span className="text-xs text-gray-700 mr-1">CTA:</span>
