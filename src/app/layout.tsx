@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./fonts.css"; // 导入字体CSS文件
+import Script from "next/script"; // 导入Script组件
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,19 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Serif+TC:wght@400;600;700&family=Zen+Old+Mincho:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" 
           rel="stylesheet"
         />
+        {/* Plausible Analytics - 请替换 yourdomain.com 为您的实际域名 */}
+        <Script 
+          defer 
+          data-domain="yourdomain.com" 
+          src="https://plausible.io/js/script.js"
+          strategy="afterInteractive"
+        />
+        {/* Plausible Analytics 自定义事件跟踪 */}
+        <Script id="plausible-custom-events" strategy="afterInteractive">
+          {`
+            window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }
+          `}
+        </Script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

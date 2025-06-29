@@ -4,9 +4,16 @@ import AdGenerator from '@/components/AdGenerator'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import I18nProvider from '@/components/I18nProvider'
 import { useTranslation } from 'react-i18next'
+import usePageTracking from '@/components/usePageTracking'
 
 function Home() {
   const { t } = useTranslation();
+  
+  // 添加页面浏览跟踪
+  usePageTracking({ 
+    pageTitle: t('批量广告图片生成器'),
+    pagePath: '/' 
+  });
   
   return (
     <div className="min-h-screen bg-gray-50">

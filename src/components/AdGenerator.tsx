@@ -8,6 +8,20 @@ import { saveAs } from 'file-saver'
 import { ButtonStyle, AdText, AdTextGroup, ImageScaleSettings } from '../types/adTypes'
 import { buttonTemplates, combinedTemplates } from '../data/buttonTemplates'
 
+// 添加Plausible跟踪函数
+const trackEvent = (eventName: string, props?: Record<string, any>) => {
+  if (typeof window !== 'undefined' && window.plausible) {
+    window.plausible(eventName, { props });
+  }
+};
+
+// 声明window.plausible类型
+declare global {
+  interface Window {
+    plausible: (eventName: string, options?: { callback?: VoidFunction; props?: Record<string, any> }) => void;
+  }
+}
+
 function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number
@@ -397,6 +411,13 @@ export default function AdGenerator() {
       // 限制最多上传5张图片（考虑已有图片数量）
       const remainingSlots = 5 - (appendMode ? images.length : 0)
       const filesToProcess = Array.from(files).slice(0, remainingSlots)
+      
+      // 追踪事件 - 上传图片
+      trackEvent('upload_images', { 
+        count: filesToProcess.length,
+        mode: appendMode ? 'append' : 'replace',
+        total_after_upload: Math.min(appendMode ? images.length + filesToProcess.length : filesToProcess.length, 5)
+      });
       
       // 清除当前选择的图片（仅在非追加模式下）
       if (!appendMode && event.target.value) {
@@ -940,6 +961,13 @@ export default function AdGenerator() {
       return
     }
 
+    // 追踪事件 - 生成广告图
+    trackEvent('generate_ads', { 
+      combinations_count: combinations.length, 
+      images_count: images.length,
+      platforms_count: getSelectedPlatformCount()
+    });
+
     setIsGenerating(true)
 
     try {
@@ -1005,6 +1033,13 @@ export default function AdGenerator() {
         ? `advertisement_images_${totalImages}_variants.zip`
         : `广告图片_${totalImages}_变体.zip`;
       saveAs(content, zipFileName)
+      
+      // 追踪事件 - 导出ZIP
+      trackEvent('export_zip', { 
+        total_images: totalImages,
+        platforms_count: platforms.length,
+        combinations_count: combinations.length
+      });
       
       console.log(i18n.language === 'en' 
         ? `Generated ${totalImages} images (${platforms.length} platforms × ${combinations.length} text combinations × ${images.length} product images)`
@@ -1316,6 +1351,36 @@ export default function AdGenerator() {
       heightRatio: 0.7,
       aspectRatio: 'auto',
       stretchMode: 'maintain'
+    });
+  };
+
+  // 进入页面时记录页面浏览
+  useEffect(() => {
+    // 追踪页面浏览 - 生成器页
+    trackEvent('pageview');
+    
+    // 记录会话开始时间
+    const sessionStartTime = Date.now();
+    
+    // 组件卸载时计算会话时长
+    return () => {
+      const sessionDuration = Math.round((Date.now() - sessionStartTime) / 1000);
+      trackEvent('session_duration', { seconds: sessionDuration });
+    };
+  }, []);
+
+  // 修改使用模板函数添加事件跟踪
+  const applyButtonTemplate = (template: ButtonStyle) => {
+    setButtonStyle({
+      ...template,
+      x: buttonStyle.x,
+      y: buttonStyle.y
+    });
+    
+    // 追踪事件 - 使用模板
+    trackEvent('use_template', { 
+      // 不使用不存在的name属性，而是使用文字选项作为模板标识
+      template_id: template.textOptions[0] || 'custom_template'
     });
   };
 
