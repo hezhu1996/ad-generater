@@ -125,7 +125,10 @@ export default function AdGenerator() {
     'TikTok_Display': false,
     'Reddit_Feed': false,
     'Reddit_Card': false,
-    'Reddit_Mobile': false
+    'Reddit_Mobile': false,
+    'Etsy_Square': false,
+    'Etsy_Banner': false,
+    'Etsy_Promo': false
   })
   
   // 添加自定义尺寸状态
@@ -158,7 +161,12 @@ export default function AdGenerator() {
     // Reddit
     'Reddit_Feed': { width: 1200, height: 628 },
     'Reddit_Card': { width: 400, height: 300 },
-    'Reddit_Mobile': { width: 640, height: 640 }
+    'Reddit_Mobile': { width: 640, height: 640 },
+    
+    // Etsy
+    'Etsy_Square': { width: 1000, height: 1000 },
+    'Etsy_Banner': { width: 1200, height: 300 },
+    'Etsy_Promo': { width: 1200, height: 628 }
   })
   
   // 平台配置
@@ -199,7 +207,12 @@ export default function AdGenerator() {
     // Reddit (新增)
     { key: 'Reddit_Feed', name: 'Reddit Feed', defaultWidth: 1200, defaultHeight: 628, category: 'Reddit', icon: '🔶' },
     { key: 'Reddit_Card', name: 'Reddit 卡片', defaultWidth: 400, defaultHeight: 300, category: 'Reddit', icon: '🔶' },
-    { key: 'Reddit_Mobile', name: 'Reddit 移动端', defaultWidth: 640, defaultHeight: 640, category: 'Reddit', icon: '🔶' }
+    { key: 'Reddit_Mobile', name: 'Reddit 移动端', defaultWidth: 640, defaultHeight: 640, category: 'Reddit', icon: '🔶' },
+    
+    // Etsy (新增)
+    { key: 'Etsy_Square', name: 'Etsy 商品主图', defaultWidth: 1000, defaultHeight: 1000, category: 'Etsy', icon: '🛍️' },
+    { key: 'Etsy_Banner', name: 'Etsy 店铺横幅', defaultWidth: 1200, defaultHeight: 300, category: 'Etsy', icon: '🛍️' },
+    { key: 'Etsy_Promo', name: 'Etsy 促销图', defaultWidth: 1200, defaultHeight: 628, category: 'Etsy', icon: '🛍️' }
   ]
   
   // 平台选择处理函数
@@ -1575,14 +1588,28 @@ export default function AdGenerator() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">平台选择</h2>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-3">
                 <span className="text-xs text-gray-500">已选择 {getSelectedPlatformCount()}/{allPlatforms.length}</span>
-                <button
-                  onClick={handleSelectAll}
-                  className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
-                >
-                  {Object.values(selectedPlatforms).every(v => v) ? '取消全选' : '全选'}
-                </button>
+                <div className="flex space-x-2">
+                  <button
+                    onClick={handleSelectAll}
+                    className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
+                  >
+                    {Object.values(selectedPlatforms).every(v => v) ? '取消全选' : '全选'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const allSelected = {};
+                      allPlatforms.forEach(platform => {
+                        allSelected[platform.key] = true;
+                      });
+                      setSelectedPlatforms(allSelected);
+                    }}
+                    className="text-green-600 hover:text-green-800 font-medium text-xs px-2 py-1 border border-green-300 rounded hover:bg-green-50 transition-colors"
+                  >
+                    默认全选
+                  </button>
+                </div>
               </div>
             </div>
             
