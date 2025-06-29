@@ -342,6 +342,16 @@ if (typeof window !== 'undefined') {
   i18nInstance.use(LanguageDetector);
 }
 
+// 添加语言检测回调，确保只使用支持的语言
+const languageDetectorCallback = (detectedLng: string) => {
+  // 如果检测到的语言以zh开头(如zh-CN, zh-TW等)，返回zh
+  if (detectedLng && detectedLng.startsWith('zh')) {
+    return 'zh';
+  }
+  // 其他所有语言默认返回英文
+  return 'en';
+};
+
 i18nInstance
   .use(initReactI18next)
   .init({
@@ -355,9 +365,12 @@ i18nInstance
     },
     // 用户手动设置的语言优先
     lng: getStoredLanguage() || 'en', // 确保有默认值
+    supportedLngs: ['en', 'zh'], // 支持的语言列表
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
+      // 添加检测回调，处理检测到的语言
+      convertDetectedLanguage: languageDetectorCallback
     }
   });
 
