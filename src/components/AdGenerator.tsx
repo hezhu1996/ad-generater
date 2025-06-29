@@ -58,7 +58,8 @@ interface ButtonStyle {
 }
 
 export default function AdGenerator() {
-  const [image, setImage] = useState<string | null>(null)
+  const [images, setImages] = useState<string[]>([])
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
   const [adTextGroups, setAdTextGroups] = useState<AdTextGroup[]>([])
   const [buttonStyle, setButtonStyle] = useState<ButtonStyle>({
     backgroundColor: '#3b82f6',
@@ -306,14 +307,40 @@ export default function AdGenerator() {
   );
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (file) {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        setImage(e.target?.result as string)
+    const files = event.target.files
+    if (files && files.length > 0) {
+      // 限制最多上传5张图片
+      const filesToProcess = Array.from(files).slice(0, 5)
+      
+      // 清除当前选择的图片
+      if (event.target.value) {
+        // 如果用户选择了新图片，重置图片数组
+        setImages([])
+        setCurrentImageIndex(0)
       }
-      reader.readAsDataURL(file)
+      
+      filesToProcess.forEach(file => {
+        const reader = new FileReader()
+        reader.onload = (e) => {
+          setImages(prevImages => {
+            // 限制最多5张图片
+            const newImages = [...prevImages, e.target?.result as string].slice(0, 5)
+            return newImages
+          })
+        }
+        reader.readAsDataURL(file)
+      })
     }
+  }
+  
+  // 切换到上一张图片
+  const handlePrevImage = () => {
+    setCurrentImageIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))
+  }
+  
+  // 切换到下一张图片
+  const handleNextImage = () => {
+    setCurrentImageIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))
   }
 
   const addAdTextGroup = () => {
@@ -512,7 +539,8 @@ export default function AdGenerator() {
   }
 
   const generateAdImage = useCallback(async (width: number, height: number, format: string, textCombination: AdText[], ctaText: string) => {
-    if (!image || !canvasRef.current) return null
+    const currentImage = images[currentImageIndex]
+    if (!currentImage || !canvasRef.current || images.length === 0) return null
 
     // 调试输出
     console.log("绘制文字组合:", textCombination.map(t => ({
@@ -659,9 +687,9 @@ export default function AdGenerator() {
 
         resolve(canvas.toDataURL('image/png'))
       }
-      img.src = image
+      img.src = images[currentImageIndex]
     })
-  }, [image, buttonStyle, draggedText, draggedButton])
+  }, [images, currentImageIndex, buttonStyle, draggedText, draggedButton])
 
   // 分离CTA按钮绘制函数
   const drawCTAButton = (ctx: CanvasRenderingContext2D, width: number, height: number, imageHeight: number, ctaButtonText: string, ctaButtonStyle: ButtonStyle) => {
@@ -805,7 +833,7 @@ export default function AdGenerator() {
   const handleGenerateAds = async () => {
     const combinations = generateAllCombinations()
     
-    if (!image || combinations.length === 0) {
+    if (images.length === 0 || combinations.length === 0) {
       alert('请上传图片并添加至少一个广告文字或CTA按钮文字选项')
       return
     }
@@ -818,44 +846,59 @@ export default function AdGenerator() {
       // 生成不同平台的广告图片
       const platforms = getSelectedPlatforms()
 
-      let imageCounter = 1
+      // 保存当前图片索引，以便生成完成后恢复
+      const originalImageIndex = currentImageIndex;
       
-      for (const platform of platforms) {
-        for (const combination of combinations) {
-          const imageData = await generateAdImage(
-            platform.width, 
-            platform.height, 
-            'png',
-            combination.texts,
-            combination.ctaText
-          )
-          
-          if (imageData) {
-            const base64Data = imageData.split(',')[1]
+      // 为每张上传的图片生成广告
+      for (let imgIndex = 0; imgIndex < images.length; imgIndex++) {
+        // 临时切换到当前处理的图片
+        setCurrentImageIndex(imgIndex);
+        
+        let imageCounter = 1;
+        
+        for (const platform of platforms) {
+          for (const combination of combinations) {
+            // 等待一小段时间确保状态更新
+            await new Promise(resolve => setTimeout(resolve, 10));
             
-            // 提取文字选项和CTA内容，生成更有意义的文件名
-            const textOptions = combination.texts.map(t => t.text.trim()).filter(Boolean);
-            const textPart = textOptions.length > 0 
-              ? textOptions.join('_').substring(0, 30).replace(/[\\/:*?"<>|]/g, '') 
-              : "无文字";
+            const imageData = await generateAdImage(
+              platform.width, 
+              platform.height, 
+              'png',
+              combination.texts,
+              combination.ctaText
+            )
+            
+            if (imageData) {
+              const base64Data = imageData.split(',')[1]
               
-            const ctaPart = combination.ctaText
-              ? combination.ctaText.substring(0, 20).replace(/[\\/:*?"<>|]/g, '')
-              : "无CTA";
-              
-            const fileName = `${platform.name}_${textPart}_${ctaPart}_${imageCounter.toString().padStart(3, '0')}.png`
-            zip.file(fileName, base64Data, { base64: true })
+              // 提取文字选项和CTA内容，生成更有意义的文件名
+              const textOptions = combination.texts.map(t => t.text.trim()).filter(Boolean);
+              const textPart = textOptions.length > 0 
+                ? textOptions.join('_').substring(0, 30).replace(/[\\/:*?"<>|]/g, '') 
+                : "无文字";
+                
+              const ctaPart = combination.ctaText
+                ? combination.ctaText.substring(0, 20).replace(/[\\/:*?"<>|]/g, '')
+                : "无CTA";
+                
+              const fileName = `图片${imgIndex+1}_${platform.name}_${textPart}_${ctaPart}_${imageCounter.toString().padStart(3, '0')}.png`
+              zip.file(fileName, base64Data, { base64: true })
+            }
+            imageCounter++
           }
-          imageCounter++
+          imageCounter = 1 // 重置计数器为下一个平台
         }
-        imageCounter = 1 // 重置计数器为下一个平台
       }
+      
+      // 恢复原来的图片索引
+      setCurrentImageIndex(Math.min(originalImageIndex, images.length - 1));
 
       const content = await zip.generateAsync({ type: 'blob' })
-      const totalImages = platforms.length * combinations.length
+      const totalImages = platforms.length * combinations.length * images.length
       saveAs(content, `advertisement_images_${totalImages}_variants.zip`)
       
-      console.log(`生成了 ${totalImages} 张图片 (${platforms.length} 个平台 × ${combinations.length} 个文字组合)`)
+      console.log(`生成了 ${totalImages} 张图片 (${platforms.length} 个平台 × ${combinations.length} 个文字组合 × ${images.length} 张产品图片)`)
     } catch (error) {
       console.error('生成广告图片时出错:', error)
       alert('生成图片时出现错误，请重试')
@@ -867,12 +910,12 @@ export default function AdGenerator() {
   // 实时预览功能 - 简化更新逻辑，恢复更稳定的渲染
   useEffect(() => {
     // 如果不是拖动中就更新预览
-    if (!draggedText && !draggedButton && image && canvasRef.current) {
+    if (!draggedText && !draggedButton && images.length > 0 && canvasRef.current) {
       const currentPlatform = getCurrentPreviewPlatform();
       generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
         .catch(err => console.error('预览更新失败:', err));
     }
-  }, [image, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts]);
+  }, [images, currentImageIndex, adTextGroups, buttonStyle, generateAdImage, draggedText, draggedButton, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts]);
 
   // 确保在拖动结束后正确更新一次，保持当前选择的文字选项
   useEffect(() => {
@@ -883,7 +926,7 @@ export default function AdGenerator() {
       
       // 延迟更新以确保状态已完全更新
       setTimeout(() => {
-        if (image && canvasRef.current) {
+        if (images.length > 0 && canvasRef.current) {
           // 刷新预览 - 直接调用预览逻辑
           const currentPlatform = getCurrentPreviewPlatform();
           generateAdImage(currentPlatform.width, currentPlatform.height, 'png', previewTexts, previewCtaText)
@@ -891,11 +934,11 @@ export default function AdGenerator() {
         }
       }, 50);
     }
-  }, [draggedText, draggedButton, debounceUpdate, image, generateAdImage, getCurrentPreviewPlatform, previewTexts, previewCtaText]);
+  }, [draggedText, draggedButton, debounceUpdate, images, currentImageIndex, generateAdImage, getCurrentPreviewPlatform, previewTexts, previewCtaText]);
 
   // 更新handleCanvasMouseDown以支持按钮拖拽
   const handleCanvasMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || !canvasContainerRef.current || !image) return;
+    if (!canvasRef.current || !canvasContainerRef.current || images.length === 0) return;
     
     const rect = canvasRef.current.getBoundingClientRect();
     const x = ((e.clientX - rect.left) / rect.width) * 100; // 转为百分比
@@ -918,7 +961,7 @@ export default function AdGenerator() {
         
         if (tempCtx) {
           const img = new Image();
-          img.src = image;
+          img.src = images[currentImageIndex];
           
           // 计算图片位置（简化版，只计算高度）
           const imageHeight = img.height > 0 ? 300 : 0; // 估计值
@@ -961,7 +1004,7 @@ export default function AdGenerator() {
     console.log("当前自定义文字组:", adTextGroups.filter(g => g.position === 'custom'));
     
     const customTexts = adTextGroups.filter(group => group.position === 'custom');
-    if (customTexts.length > 0) {
+    if (customTexts.length > 0 && images.length > 0) {
       let closestId: string | null = null;
       let minDist = 15; // 最大选择距离（百分比单位）
       
@@ -1098,7 +1141,7 @@ export default function AdGenerator() {
 
   // 手动刷新预览功能 - 使用当前选中的文字选项
   const refreshPreview = useCallback(() => {
-    if (!image || !canvasRef.current) return;
+    if (images.length === 0 || !canvasRef.current) return;
       
     try {
       const currentPlatform = getCurrentPreviewPlatform();
@@ -1109,7 +1152,7 @@ export default function AdGenerator() {
     } catch (error) {
       console.error('手动刷新预览失败:', error);
     }
-  }, [image, canvasRef, generateAdImage, getCurrentPreviewPlatform, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts, previewCtaText]);
+  }, [images, currentImageIndex, canvasRef, generateAdImage, getCurrentPreviewPlatform, previewPlatform, customSizes, previewCtaIndex, previewTextIndexes, previewTexts, previewCtaText]);
 
   // 1. 在adTextGroups变化时自动同步previewTextIndexes长度，并确保每组索引不超过当前选项数-1
   useEffect(() => {
@@ -1136,16 +1179,21 @@ export default function AdGenerator() {
               className="w-full border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition-colors bg-transparent"
               onClick={() => fileInputRef.current?.click()}
             >
-              {image ? (
+              {images.length > 0 ? (
                 <div className="space-y-2">
-                  <img src={image} alt="Uploaded" className="max-h-32 mx-auto rounded" />
-                  <p className="text-sm text-gray-600">点击更换图片</p>
+                  <div className="relative">
+                    <img src={images[currentImageIndex]} alt="Uploaded" className="max-h-32 mx-auto rounded" />
+                    <span className="absolute bottom-0 right-0 bg-blue-500 text-white text-xs px-2 py-1 rounded-tl rounded-br">
+                      {currentImageIndex + 1}/{images.length}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600">已上传 {images.length} 张图片，点击更换</p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   <div className="text-4xl text-gray-400">📷</div>
                   <p className="text-gray-600">点击或拖拽上传图片</p>
-                  <p className="text-sm text-gray-400">支持 JPG, PNG 格式</p>
+                  <p className="text-sm text-gray-400">支持 JPG, PNG 格式 (最多5张)</p>
                 </div>
               )}
             </button>
@@ -1155,6 +1203,7 @@ export default function AdGenerator() {
               accept="image/*"
               onChange={handleImageUpload}
               className="hidden"
+              multiple
             />
           </div>
 
@@ -1730,7 +1779,7 @@ export default function AdGenerator() {
           {/* 生成按钮 */}
           <button
             onClick={handleGenerateAds}
-            disabled={!image || (adTextGroups.length === 0 && buttonStyle.textOptions.every(opt => !opt.trim())) || isGenerating || getSelectedPlatformCount() === 0}
+            disabled={images.length === 0 || (adTextGroups.length === 0 && buttonStyle.textOptions.every(opt => !opt.trim())) || isGenerating || getSelectedPlatformCount() === 0}
             className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isGenerating ? '生成中...' : '生成所有组合的广告图片'}
@@ -1829,7 +1878,7 @@ export default function AdGenerator() {
               )}
             </div>
             
-            {image && (
+            {images.length > 0 && (
               <>
               <div 
                 ref={canvasContainerRef}
@@ -1839,6 +1888,37 @@ export default function AdGenerator() {
                     maxHeight: '700px'
                   }}
               >
+                {/* 左右箭头导航按钮 */}
+                {images.length > 1 && (
+                  <>
+                    <button 
+                      onClick={handlePrevImage}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
+                      aria-label="上一张图片"
+                    >
+                      <span className="text-xl">&lsaquo;</span>
+                    </button>
+                    <button 
+                      onClick={handleNextImage}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black bg-opacity-50 text-white w-10 h-10 rounded-full flex items-center justify-center z-10 hover:bg-opacity-70 transition-opacity"
+                      aria-label="下一张图片"
+                    >
+                      <span className="text-xl">&rsaquo;</span>
+                    </button>
+                    <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
+                      {images.map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentImageIndex(idx)}
+                          className={`w-2 h-2 rounded-full ${
+                            currentImageIndex === idx ? 'bg-white' : 'bg-white bg-opacity-50'
+                          }`}
+                          aria-label={`切换到图片 ${idx + 1}`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
                 <canvas
                   ref={canvasRef}
                     className="w-full h-full cursor-move"
@@ -1854,11 +1934,15 @@ export default function AdGenerator() {
                 />
                 </div>
                 {/* 预览尺寸提示，移到预览图外部 */}
-                <div className="w-full flex justify-center mt-2">
+                <div className="w-full flex justify-between items-center mt-2">
+                  <span className="text-sm text-gray-600">
+                    {images.length > 0 ? `图片 ${currentImageIndex + 1}/${images.length}` : '未上传图片'}
+                  </span>
                   <span className="bg-black text-white text-base rounded-xl px-4 py-1 font-medium shadow">
                     {getCurrentPreviewPlatform().name} ({getCurrentPreviewPlatform().width}×{getCurrentPreviewPlatform().height})
-                      </span>
-                  </div>
+                  </span>
+                  <span className="text-sm text-gray-600 invisible">占位</span>
+                </div>
               </>
             )}
             
