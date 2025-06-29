@@ -2231,20 +2231,21 @@ export default function AdGenerator() {
               </div>
             </div>
             
-            {/* 美观的平台选择卡片 */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* 更紧凑版平台选择 */}
+            <div className="space-y-2">
               {Object.entries(getPlatformsByCategory()).map(([category, platforms]) => (
-                <div key={category} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-3">
-                  <div className="flex items-center justify-between mb-2">
+                <div key={category} className="bg-gradient-to-r from-gray-50 to-white border border-gray-200 rounded-lg p-2">
+                  <div className="flex items-center justify-between mb-1">
                     <h3 className="text-sm font-semibold text-gray-800 flex items-center">
                       {platforms[0].icon} {category}
                     </h3>
-                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
                       {platforms.filter(p => selectedPlatforms[p.key]).length}/{platforms.length}
                     </span>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-2">
+                  {/* 使用更多列的网格布局 */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1.5">
                     {platforms.map(platform => {
                       const isSelected = selectedPlatforms[platform.key]
                       const currentSize = customSizes[platform.key]
@@ -2252,48 +2253,42 @@ export default function AdGenerator() {
                       
                       return (
                         <div key={platform.key} className={`
-                          border rounded-lg p-2 transition-all duration-200
+                          border rounded-lg p-1.5 transition-all duration-200 text-xs
                           ${isSelected 
                             ? 'border-blue-300 bg-blue-50 shadow-sm' 
                             : 'border-gray-200 bg-white hover:bg-gray-50'
                           }
                         `}>
                           <div className="flex items-center justify-between">
-                            <label className="flex items-center space-x-2 cursor-pointer flex-1">
+                            <label className="flex items-center space-x-1 cursor-pointer flex-1">
                               <input
                                 type="checkbox"
                                 checked={isSelected}
                                 onChange={() => handlePlatformToggle(platform.key)}
-                                className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                className="w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                               />
-                              <span className="text-sm font-medium text-gray-700">{platform.name}</span>
+                              <div className="flex flex-col">
+                                <span className="font-medium text-gray-700 leading-tight">{platform.name}</span>
+                                <span className="text-gray-500 text-xs leading-tight">
+                                  {currentSize.width}×{currentSize.height}
+                                  {isCustomSize && <span className="text-orange-600 ml-0.5">*</span>}
+                                </span>
+                              </div>
                             </label>
                             
-                            <div className="flex items-center space-x-2">
-                              {/* 尺寸显示/编辑 */}
-                              <div className="flex items-center space-x-1">
-                                <span className="text-xs text-gray-500">
-                                  {currentSize.width}×{currentSize.height}
-                                </span>
-                                {isCustomSize && (
-                                  <span className="text-xs text-orange-600 bg-orange-100 px-1 rounded ml-1 text-xs">{t('自定义')}</span>
-                                )}
-                              </div>
-                              
-                              {/* 尺寸编辑按钮 */}
+                            {/* 更紧凑的操作按钮 */}
+                            <div className="flex">
                               <button
                                 onClick={() => setEditingSize(editingSize === platform.key ? null : platform.key)}
-                                className="text-xs text-blue-600 hover:text-blue-800 px-2 py-1 border border-blue-200 rounded hover:bg-blue-50 transition-colors"
+                                className="text-blue-600 hover:text-blue-800 px-1 rounded hover:bg-blue-50 transition-colors"
                                 title={t('编辑尺寸')}
                               >
                                 ✏️
                               </button>
-                              
-                              {/* 重置尺寸按钮 */}
                               {isCustomSize && (
                                 <button
                                   onClick={() => handleResetSize(platform.key)}
-                                  className="text-xs text-gray-500 hover:text-gray-700 px-1 py-1 rounded hover:bg-gray-100 transition-colors"
+                                  className="text-gray-500 hover:text-gray-700 px-1 rounded hover:bg-gray-100 transition-colors"
                                   title={t('重置为默认尺寸')}
                                 >
                                   ↺
@@ -2302,38 +2297,32 @@ export default function AdGenerator() {
                             </div>
                           </div>
                           
-                          {/* 尺寸编辑区域 */}
+                          {/* 尺寸编辑区域 - 极简版 */}
                           {editingSize === platform.key && (
-                            <div className="mt-2 pt-2 border-t border-gray-200 bg-gray-50 rounded p-2">
-                              <div className="flex items-center space-x-2">
-                                <div className="flex items-center space-x-1">
-                                  <label className="text-xs text-gray-600">{t('宽:')}:</label>
-                                  <input
-                                    type="number"
-                                    value={currentSize.width}
-                                    onChange={(e) => handleCustomSizeChange(platform.key, 'width', parseInt(e.target.value) || 100)}
-                                    className="w-16 text-xs border rounded px-1 py-1"
-                                    min="100"
-                                    max="3000"
-                                  />
-                                </div>
-                                <span className="text-xs text-gray-400">×</span>
-                                <div className="flex items-center space-x-1">
-                                  <label className="text-xs text-gray-600">{t('高:')}:</label>
-                                  <input
-                                    type="number"
-                                    value={currentSize.height}
-                                    onChange={(e) => handleCustomSizeChange(platform.key, 'height', parseInt(e.target.value) || 100)}
-                                    className="w-16 text-xs border rounded px-1 py-1"
-                                    min="100"
-                                    max="3000"
-                                  />
-                                </div>
+                            <div className="mt-1 pt-1 border-t border-gray-200 bg-gray-50 rounded-sm p-1">
+                              <div className="flex items-center space-x-1 text-xs">
+                                <input
+                                  type="number"
+                                  value={currentSize.width}
+                                  onChange={(e) => handleCustomSizeChange(platform.key, 'width', parseInt(e.target.value) || 100)}
+                                  className="w-12 border rounded px-1 py-0.5 text-xs"
+                                  min="100"
+                                  max="3000"
+                                />
+                                <span className="text-gray-400">×</span>
+                                <input
+                                  type="number"
+                                  value={currentSize.height}
+                                  onChange={(e) => handleCustomSizeChange(platform.key, 'height', parseInt(e.target.value) || 100)}
+                                  className="w-12 border rounded px-1 py-0.5 text-xs"
+                                  min="100"
+                                  max="3000"
+                                />
                                 <button
                                   onClick={() => setEditingSize(null)}
-                                  className="text-xs text-green-600 hover:text-green-800 px-2 py-1 border border-green-200 rounded hover:bg-green-50"
+                                  className="ml-0.5 text-green-600 hover:text-green-800 px-1 py-0 border border-green-200 rounded hover:bg-green-50"
                                 >
-                                  {t('完成')}
+                                  ✓
                                 </button>
                               </div>
                             </div>
@@ -2346,10 +2335,10 @@ export default function AdGenerator() {
               ))}
             </div>
             
-            {/* 选择统计 */}
-            <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-3 border border-blue-200">
+            {/* 选择统计 - 极简版 */}
+            <div className="mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-2 border border-blue-200">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-blue-700">
+                <p className="text-xs text-blue-700">
                   {t('已选择')} <span className="font-semibold">{getSelectedPlatformCount()}</span> {t('个平台')}
                 </p>
                 <div className="text-xs text-blue-600">
