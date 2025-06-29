@@ -101,74 +101,6 @@ export default function AdGenerator() {
   // 添加预览平台选择状态
   const [previewPlatform, setPreviewPlatform] = useState<string>('default')
   
-  // 添加平台选择状态
-  const [selectedPlatforms, setSelectedPlatforms] = useState<{[key: string]: boolean}>({
-    // 基础平台
-    'Facebook_Square': true,
-    'Facebook_Landscape': true,
-    'Google_Ads_Square': true,
-    'Google_Ads_Landscape': true,
-    'Instagram_Square': true,
-    'Instagram_Story': true,
-    'LinkedIn_Single': true,
-    'Twitter_Post': true,
-    
-    // 新增电商平台 - 默认不选中
-    'Amazon_Mobile': false,
-    'Amazon_Desktop': false,
-    'Amazon_Banner': false,
-    'eBay_Standard': false,
-    'eBay_Billboard': false,
-    'eBay_Mobile': false,
-    'TikTok_Feed': false,
-    'TikTok_Splash': false,
-    'TikTok_Display': false,
-    'Reddit_Feed': false,
-    'Reddit_Card': false,
-    'Reddit_Mobile': false,
-    'Etsy_Square': false,
-    'Etsy_Banner': false,
-    'Etsy_Promo': false
-  })
-  
-  // 添加自定义尺寸状态
-  const [customSizes, setCustomSizes] = useState<{[key: string]: {width: number, height: number}}>({
-    // 基础平台
-    'Facebook_Square': { width: 1080, height: 1080 },
-    'Facebook_Landscape': { width: 1200, height: 630 },
-    'Google_Ads_Square': { width: 1200, height: 1200 },
-    'Google_Ads_Landscape': { width: 1200, height: 628 },
-    'Instagram_Square': { width: 1080, height: 1080 },
-    'Instagram_Story': { width: 1080, height: 1920 },
-    'LinkedIn_Single': { width: 1200, height: 627 },
-    'Twitter_Post': { width: 1200, height: 675 },
-    
-    // Amazon
-    'Amazon_Mobile': { width: 600, height: 500 },
-    'Amazon_Desktop': { width: 1000, height: 500 },
-    'Amazon_Banner': { width: 1500, height: 300 },
-    
-    // eBay
-    'eBay_Standard': { width: 900, height: 900 },
-    'eBay_Billboard': { width: 1200, height: 270 },
-    'eBay_Mobile': { width: 660, height: 440 },
-    
-    // TikTok
-    'TikTok_Feed': { width: 1080, height: 1920 },
-    'TikTok_Splash': { width: 1080, height: 1920 },
-    'TikTok_Display': { width: 1200, height: 628 },
-    
-    // Reddit
-    'Reddit_Feed': { width: 1200, height: 628 },
-    'Reddit_Card': { width: 400, height: 300 },
-    'Reddit_Mobile': { width: 640, height: 640 },
-    
-    // Etsy
-    'Etsy_Square': { width: 1000, height: 1000 },
-    'Etsy_Banner': { width: 1200, height: 300 },
-    'Etsy_Promo': { width: 1200, height: 628 }
-  })
-  
   // 平台配置
   const allPlatforms = [
     // Facebook
@@ -215,6 +147,54 @@ export default function AdGenerator() {
     { key: 'Etsy_Promo', name: 'Etsy 促销图', defaultWidth: 1200, defaultHeight: 628, category: 'Etsy', icon: '🛍️' }
   ]
   
+  // 添加平台选择状态 - 默认全选
+  const [selectedPlatforms, setSelectedPlatforms] = useState<{[key: string]: boolean}>(() => {
+    // 创建包含所有平台的初始状态，全部设为true
+    const initialState: Record<string, boolean> = {};
+    allPlatforms.forEach(platform => {
+      initialState[platform.key] = true;
+    });
+    return initialState;
+  })
+  
+  // 添加自定义尺寸状态
+  const [customSizes, setCustomSizes] = useState<{[key: string]: {width: number, height: number}}>({
+    // 基础平台
+    'Facebook_Square': { width: 1080, height: 1080 },
+    'Facebook_Landscape': { width: 1200, height: 630 },
+    'Google_Ads_Square': { width: 1200, height: 1200 },
+    'Google_Ads_Landscape': { width: 1200, height: 628 },
+    'Instagram_Square': { width: 1080, height: 1080 },
+    'Instagram_Story': { width: 1080, height: 1920 },
+    'LinkedIn_Single': { width: 1200, height: 627 },
+    'Twitter_Post': { width: 1200, height: 675 },
+    
+    // Amazon
+    'Amazon_Mobile': { width: 600, height: 500 },
+    'Amazon_Desktop': { width: 1000, height: 500 },
+    'Amazon_Banner': { width: 1500, height: 300 },
+    
+    // eBay
+    'eBay_Standard': { width: 900, height: 900 },
+    'eBay_Billboard': { width: 1200, height: 270 },
+    'eBay_Mobile': { width: 660, height: 440 },
+    
+    // TikTok
+    'TikTok_Feed': { width: 1080, height: 1920 },
+    'TikTok_Splash': { width: 1080, height: 1920 },
+    'TikTok_Display': { width: 1200, height: 628 },
+    
+    // Reddit
+    'Reddit_Feed': { width: 1200, height: 628 },
+    'Reddit_Card': { width: 400, height: 300 },
+    'Reddit_Mobile': { width: 640, height: 640 },
+    
+    // Etsy
+    'Etsy_Square': { width: 1000, height: 1000 },
+    'Etsy_Banner': { width: 1200, height: 300 },
+    'Etsy_Promo': { width: 1200, height: 628 }
+  })
+  
   // 平台选择处理函数
   const handlePlatformToggle = (platformKey: string) => {
     setSelectedPlatforms(prev => ({
@@ -251,7 +231,7 @@ export default function AdGenerator() {
     const newSelection = allPlatforms.reduce((acc, platform) => {
       acc[platform.key] = !allSelected
       return acc
-    }, {} as {[key: string]: boolean})
+    }, {} as Record<string, boolean>)
     setSelectedPlatforms(newSelection)
   }
   
@@ -284,16 +264,7 @@ export default function AdGenerator() {
   // 获取当前预览平台信息
   const getCurrentPreviewPlatform = () => {
     if (previewPlatform === 'default') {
-      // 默认预览使用第一个选中的平台，或者使用固定尺寸
-      const selectedPlatforms = getSelectedPlatforms()
-      if (selectedPlatforms.length > 0) {
-        return {
-          name: selectedPlatforms[0].name,
-          width: 800,
-          height: 600,
-          isDefault: true
-        }
-      }
+      // 默认预览使用固定尺寸和名称
       return {
         name: '默认预览',
         width: 800,
@@ -1588,28 +1559,14 @@ export default function AdGenerator() {
           <div className="bg-white rounded-lg shadow-md p-6">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-gray-800">平台选择</h2>
-              <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
                 <span className="text-xs text-gray-500">已选择 {getSelectedPlatformCount()}/{allPlatforms.length}</span>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={handleSelectAll}
-                    className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
-                  >
-                    {Object.values(selectedPlatforms).every(v => v) ? '取消全选' : '全选'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const allSelected = {};
-                      allPlatforms.forEach(platform => {
-                        allSelected[platform.key] = true;
-                      });
-                      setSelectedPlatforms(allSelected);
-                    }}
-                    className="text-green-600 hover:text-green-800 font-medium text-xs px-2 py-1 border border-green-300 rounded hover:bg-green-50 transition-colors"
-                  >
-                    默认全选
-                  </button>
-                </div>
+                <button
+                  onClick={handleSelectAll}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-xs px-2 py-1 border border-blue-300 rounded hover:bg-blue-50 transition-colors"
+                >
+                  {Object.values(selectedPlatforms).every(v => v) ? '取消全选' : '全选'}
+                </button>
               </div>
             </div>
             
