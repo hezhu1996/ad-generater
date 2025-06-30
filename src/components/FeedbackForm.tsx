@@ -285,19 +285,41 @@ const FeedbackForm: React.FC = () => {
               <p className="text-gray-600 mb-4">
                 {t('有任何问题或建议，欢迎随时联系我们')}
               </p>
-              <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
-                <a
-                  href="mailto:liandyjih@gmail.com"
-                  className="text-blue-600 font-medium text-lg hover:underline"
-                  onClick={() => {
-                    // 追踪邮箱点击事件
-                    if (typeof window !== 'undefined' && window.plausible) {
-                      window.plausible('email_clicked');
-                    }
-                  }}
-                >
-                  liandyjih@gmail.com
-                </a>
+              <div className="space-y-3">
+                <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+                  <a
+                    href="mailto:liandyjih@gmail.com"
+                    className="text-blue-600 font-medium text-lg hover:underline"
+                    onClick={() => {
+                      // 追踪邮箱点击事件
+                      if (typeof window !== 'undefined' && window.plausible) {
+                        window.plausible('email_clicked');
+                      }
+                    }}
+                  >
+                    liandyjih@gmail.com
+                  </a>
+                </div>
+                
+                <div className="bg-blue-50 rounded-lg p-4 flex items-center justify-center">
+                  <a
+                    href="https://t.me/+5nxBlxJCOcw4Zjlh"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 font-medium text-lg hover:underline flex items-center"
+                    onClick={() => {
+                      // 追踪Telegram点击事件
+                      if (typeof window !== 'undefined' && window.plausible) {
+                        window.plausible('telegram_clicked');
+                      }
+                    }}
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#0088cc" className="mr-2">
+                      <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                    </svg>
+                    {t('加入我们的Telegram群组')}
+                  </a>
+                </div>
               </div>
             </div>
           </div>

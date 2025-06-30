@@ -34,6 +34,7 @@ const zhResources = {
     '提交失败，请稍后再试': '提交失败，请稍后再试',
     '联系我们': '联系我们',
     '有任何问题或建议，欢迎随时联系我们': '有任何问题或建议，欢迎随时联系我们',
+    '加入我们的Telegram群组': '加入我们的Telegram群组',
     
     // 新增模板相关翻译
     'Button Templates': '按钮模板',
@@ -230,6 +231,7 @@ const enResources = {
     '提交失败，请稍后再试': 'Submission failed, please try again later',
     '联系我们': 'Contact Us',
     '有任何问题或建议，欢迎随时联系我们': 'We\'d love to hear from you. If you have any questions or suggestions, please feel free to contact us.',
+    '加入我们的Telegram群组': 'Join our Telegram group',
     
     // 新增模板相关翻译
     'Button Templates': 'Button Templates',
