@@ -7,6 +7,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { ButtonStyle, AdText, AdTextGroup, ImageScaleSettings } from '../types/adTypes'
 import { buttonTemplates, combinedTemplates } from '../data/buttonTemplates'
+import ThankYouModal from './feedback/ThankYouModal'
 
 // 添加Plausible跟踪函数
 const trackEvent = (eventName: string, props?: Record<string, unknown>) => {
@@ -162,6 +163,8 @@ export default function AdGenerator() {
   const [showColorPicker, setShowColorPicker] = useState<string | null>(null)
   const [draggedText, setDraggedText] = useState<string | null>(null)
   const [draggedButton, setDraggedButton] = useState<boolean>(false)
+  const [showThankYouModal, setShowThankYouModal] = useState(false)
+  const [generatedImagesCount, setGeneratedImagesCount] = useState(0)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -1044,6 +1047,10 @@ export default function AdGenerator() {
       console.log(i18n.language === 'en' 
         ? `Generated ${totalImages} images (${platforms.length} platforms × ${combinations.length} text combinations × ${images.length} product images)`
         : `生成了 ${totalImages} 张图片 (${platforms.length} 个平台 × ${combinations.length} 个文字组合 × ${images.length} 张产品图片)`)
+        
+      // 显示感谢/反馈弹窗
+      setGeneratedImagesCount(totalImages);
+      setShowThankYouModal(true);
     } catch (error) {
       console.error(i18n.language === 'en' ? 'Error generating ad images:' : '生成广告图片时出错:', error)
       alert(i18n.language === 'en' ? 'An error occurred while generating images, please try again' : '生成图片时出现错误，请重试')
@@ -2690,6 +2697,13 @@ export default function AdGenerator() {
           </div>
         </div>
       </div>
+      
+      {/* 感谢/反馈弹窗 */}
+      <ThankYouModal 
+        isOpen={showThankYouModal}
+        onClose={() => setShowThankYouModal(false)}
+        imagesCount={generatedImagesCount}
+      />
     </div>
   )
 }

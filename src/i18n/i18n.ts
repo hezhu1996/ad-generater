@@ -36,6 +36,18 @@ const zhResources = {
     '有任何问题或建议，欢迎随时联系我们': '有任何问题或建议，欢迎随时联系我们',
     '加入我们的Telegram群组': '加入我们的Telegram群组',
     
+    // 感谢模态框相关翻译
+    'Close': '关闭',
+    '成功生成广告图片！': '成功生成广告图片！',
+    '已成功生成 {{count}} 张广告图片': '已成功生成 {{count}} 张广告图片',
+    '如何改进这个工具？': '如何改进这个工具？',
+    '感谢您的反馈！': '感谢您的反馈！',
+    '请分享您的想法和建议...': '请分享您的想法和建议...',
+    '想获得更多广告设计技巧和工具更新？': '想获得更多广告设计技巧和工具更新？',
+    '您的电子邮箱': '您的电子邮箱',
+    '已订阅!': '已订阅!',
+    '订阅': '订阅',
+    
     // 新增模板相关翻译
     'Button Templates': '按钮模板',
     '选择按钮模板': '选择按钮模板',
@@ -232,6 +244,18 @@ const enResources = {
     '联系我们': 'Contact Us',
     '有任何问题或建议，欢迎随时联系我们': 'We\'d love to hear from you. If you have any questions or suggestions, please feel free to contact us.',
     '加入我们的Telegram群组': 'Join our Telegram group',
+    
+    // 感谢模态框相关翻译
+    'Close': 'Close',
+    '成功生成广告图片！': 'Ad Images Generated Successfully!',
+    '已成功生成 {{count}} 张广告图片': 'Successfully generated {{count}} ad images',
+    '如何改进这个工具？': 'How can we improve this tool?',
+    '感谢您的反馈！': 'Thank you for your feedback!',
+    '请分享您的想法和建议...': 'Please share your thoughts and suggestions...',
+    '想获得更多广告设计技巧和工具更新？': 'Want more ad design tips and tool updates?',
+    '您的电子邮箱': 'Your email',
+    '已订阅!': 'Subscribed!',
+    '订阅': 'Subscribe',
     
     // 新增模板相关翻译
     'Button Templates': 'Button Templates',

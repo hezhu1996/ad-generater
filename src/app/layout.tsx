@@ -38,17 +38,20 @@ export default function RootLayout({
           rel="stylesheet"
         />
         <meta name="description" content="上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片" />
-        {/* Plausible Analytics - 请替换 yourdomain.com 为您的实际域名 */}
+        {/* Plausible Analytics - 自定义事件跟踪配置 */}
         <Script 
           defer 
           data-domain="rapidad.net" 
-          src="https://plausible.io/js/script.tagged-events.js"
+          src="https://plausible.io/js/script.outbound-links.js"
+          data-api="https://plausible.io/api/event"
           strategy="afterInteractive"
         />
-        {/* Plausible Analytics 自定义事件跟踪 */}
+        {/* Plausible Analytics 自定义事件跟踪初始化 */}
         <Script id="plausible-custom-events" strategy="afterInteractive">
           {`
-            window.plausible = window.plausible || function() { (window.plausible.q = window.plausible.q || []).push(arguments) }
+            window.plausible = window.plausible || function() { 
+              (window.plausible.q = window.plausible.q || []).push(arguments);
+            };
           `}
         </Script>
       </head>
