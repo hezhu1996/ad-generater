@@ -9,7 +9,7 @@ import { ButtonStyle, AdText, AdTextGroup, ImageScaleSettings } from '../types/a
 import { buttonTemplates, combinedTemplates } from '../data/buttonTemplates'
 
 // 添加Plausible跟踪函数
-const trackEvent = (eventName: string, props?: Record<string, any>) => {
+const trackEvent = (eventName: string, props?: Record<string, unknown>) => {
   if (typeof window !== 'undefined' && window.plausible) {
     window.plausible(eventName, { props });
   }
@@ -18,11 +18,11 @@ const trackEvent = (eventName: string, props?: Record<string, any>) => {
 // 声明window.plausible类型
 declare global {
   interface Window {
-    plausible: (eventName: string, options?: { callback?: VoidFunction; props?: Record<string, any> }) => void;
+    plausible: (eventName: string, options?: { callback?: VoidFunction; props?: Record<string, unknown> }) => void;
   }
 }
 
-function debounce<T extends (...args: any[]) => any>(
+function debounce<T extends (...args: never[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -655,7 +655,8 @@ export default function AdGenerator() {
         const imgAspectRatio = img.width / img.height
         const canvasAspectRatio = width / height
         
-        let scaledWidth, scaledHeight, x, y
+        let scaledWidth: number, scaledHeight: number
+        
         
         // 完全拉伸模式 - 忽略原始比例，直接使用设定的宽高比例
         if (imageScaleSettings.mode === 'custom' && imageScaleSettings.stretchMode === 'stretch') {
@@ -709,18 +710,18 @@ export default function AdGenerator() {
         }
         
         // 计算居中位置
-        x = (width - scaledWidth) / 2
-        y = (height - scaledHeight) / 2
+        const imageX = (width - scaledWidth) / 2
+        const imageY = (height - scaledHeight) / 2
         
         console.log("图片绘制参数:", {
           originalSize: { width: img.width, height: img.height },
           scaledSize: { width: scaledWidth, height: scaledHeight },
-          position: { x, y },
+          position: { x: imageX, y: imageY },
           canvasSize: { width, height },
           scaleSettings: imageScaleSettings
         });
         
-        ctx.drawImage(img, x, y, scaledWidth, scaledHeight)
+        ctx.drawImage(img, imageX, imageY, scaledWidth, scaledHeight)
 
         // 绘制文字
         // 先绘制顶部和底部文字
@@ -733,7 +734,7 @@ export default function AdGenerator() {
         
         if (bottomTexts.length > 0) {
           // 修改调用方式，不再传递CTA按钮相关参数
-          drawBottomTexts(ctx, width, height, bottomTexts, y + scaledHeight);
+          drawBottomTexts(ctx, width, height, bottomTexts, imageY + scaledHeight);
         }
         
         // 最后单独绘制自定义位置文字，确保它们总是显示在最上层
@@ -785,7 +786,7 @@ export default function AdGenerator() {
         
         // 最后处理CTA按钮
         if (ctaText.trim()) {
-          drawCTAButton(ctx, width, height, y + scaledHeight, ctaText, buttonStyle);
+          drawCTAButton(ctx, width, height, imageY + scaledHeight, ctaText, buttonStyle);
         }
 
         resolve(canvas.toDataURL('image/png'))
@@ -807,10 +808,9 @@ export default function AdGenerator() {
     ctx.font = `bold ${fontSize}px ${ctaButtonStyle.font}`;
     // 设置字体平滑渲染 - 通过字体设置优化渲染效果
     if (ctx instanceof CanvasRenderingContext2D) {
-      // @ts-ignore - Canvas非标准属性
-      ctx.fontKerning = 'normal';
-      // @ts-ignore - Canvas非标准属性
-      ctx.textRendering = 'optimizeLegibility';
+      // Canvas非标准属性用于字体渲染优化
+      (ctx as CanvasRenderingContext2D & { fontKerning?: string }).fontKerning = 'normal';
+      (ctx as CanvasRenderingContext2D & { textRendering?: string }).textRendering = 'optimizeLegibility';
     }
     const textMetrics = ctx.measureText(ctaButtonText);
     const textWidth = textMetrics.width;
@@ -1876,7 +1876,7 @@ export default function AdGenerator() {
                         }
                         
                         // 将所有文字组都设置为自定义位置，以便可以拖动
-                        let position: 'top' | 'bottom' | 'custom' = 'custom';
+                        const position: 'top' | 'bottom' | 'custom' = 'custom';
                         let x = textStyle.x;
                         let y = textStyle.y;
                         

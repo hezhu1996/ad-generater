@@ -4,7 +4,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 // 定义window.plausible类型
 declare global {
   interface Window {
-    plausible: (eventName: string, options?: { callback?: VoidFunction; props?: Record<string, any> }) => void;
+    plausible: (eventName: string, options?: { callback?: VoidFunction; props?: Record<string, unknown> }) => void;
   }
 }
 
@@ -46,7 +46,7 @@ export default function usePageTracking(pageProps?: PageViewProps) {
   }, [pathname, searchParams, pageProps]);
   
   // 提供一个函数用于手动触发页面浏览事件
-  const trackPageView = (customProps?: Record<string, any>) => {
+  const trackPageView = (customProps?: Record<string, unknown>) => {
     if (typeof window !== 'undefined' && window.plausible) {
       window.plausible('pageview', { 
         props: { 
