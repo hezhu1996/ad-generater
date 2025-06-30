@@ -30,6 +30,10 @@ const zhResources = {
     '谢谢您的反馈！': '谢谢您的反馈！',
     '我们已收到您的反馈，并会通过邮箱通知您后续进展。': '我们已收到您的反馈，并会通过邮箱通知您后续进展。',
     '我们已收到您的反馈，感谢您的支持！': '我们已收到您的反馈，感谢您的支持！',
+    '提交失败，但已保存在本地': '提交失败，但已保存在本地',
+    '提交失败，请稍后再试': '提交失败，请稍后再试',
+    '联系我们': '联系我们',
+    '有任何问题或建议，欢迎随时联系我们': '有任何问题或建议，欢迎随时联系我们',
     
     // 新增模板相关翻译
     'Button Templates': '按钮模板',
@@ -222,6 +226,10 @@ const enResources = {
     '谢谢您的反馈！': 'Thank You for Your Feedback!',
     '我们已收到您的反馈，并会通过邮箱通知您后续进展。': 'We have received your feedback and will notify you of updates via email.',
     '我们已收到您的反馈，感谢您的支持！': 'We have received your feedback. Thank you for your support!',
+    '提交失败，但已保存在本地': 'Submission failed but saved locally',
+    '提交失败，请稍后再试': 'Submission failed, please try again later',
+    '联系我们': 'Contact Us',
+    '有任何问题或建议，欢迎随时联系我们': 'We\'d love to hear from you. If you have any questions or suggestions, please feel free to contact us.',
     
     // 新增模板相关翻译
     'Button Templates': 'Button Templates',

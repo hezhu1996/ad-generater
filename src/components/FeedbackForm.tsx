@@ -20,6 +20,7 @@ interface FeedbackData {
 const FeedbackForm: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
+  const [showContactInfo, setShowContactInfo] = useState(false);
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('suggestion');
   const [feedbackText, setFeedbackText] = useState('');
   const [email, setEmail] = useState('');
@@ -28,7 +29,7 @@ const FeedbackForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   // Google Sheets Web App URL - 替换为您部署的Apps Script URL
-  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbxNt0lrSRLnvaHqISP0K2XI_OH2-Fjkg_EJ0-yUkfDdPan38Y-cIrSgfonDv25wIUtong/exec';
+  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzHJsVaHIojHprsT3nbE7Y_P8dnl4Fc6rCr-si7HEyPkOQVykvDww5z0VTtbQZ-YIt37A/exec';
 
   // 发送反馈到Google Sheets
   const sendFeedbackToGoogleSheets = async (data: FeedbackData): Promise<boolean> => {
@@ -129,17 +130,38 @@ const FeedbackForm: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+  
+  // 打开联系信息弹窗
+  const handleContactUsClick = () => {
+    setShowContactInfo(true);
+    
+    // 如果集成了Plausible，跟踪事件
+    if (typeof window !== 'undefined' && window.plausible) {
+      window.plausible('contact_info_viewed');
+    }
+  };
 
   return (
     <>
-      {/* 反馈按钮 */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed right-0 top-1/2 -translate-y-1/2 bg-blue-600 text-white px-3 py-6 rounded-l-md shadow-lg hover:bg-blue-700 transition-colors"
-        style={{ writingMode: 'vertical-lr' }}
-      >
-        {t('反馈')}
-      </button>
+      <div className="fixed right-0 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-40">
+        {/* 反馈按钮 */}
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-blue-600 text-white px-3 py-6 rounded-l-md shadow-lg hover:bg-blue-700 transition-colors"
+          style={{ writingMode: 'vertical-lr' }}
+        >
+          {t('反馈')}
+        </button>
+        
+        {/* 联系我们按钮 */}
+        <button
+          onClick={handleContactUsClick}
+          className="bg-green-600 text-white px-3 py-6 rounded-l-md shadow-lg hover:bg-green-700 transition-colors"
+          style={{ writingMode: 'vertical-lr' }}
+        >
+          {t('联系我们')}
+        </button>
+      </div>
 
       {/* 反馈表单弹窗 */}
       {isOpen && (
@@ -237,6 +259,47 @@ const FeedbackForm: React.FC = () => {
                 </p>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      
+      {/* 联系我们弹窗 */}
+      {showContactInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4 relative">
+            {/* 关闭按钮 */}
+            <button
+              onClick={() => setShowContactInfo(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            <div className="text-center py-8">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 text-green-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <h2 className="text-2xl font-bold mb-2 text-gray-800">{t('联系我们')}</h2>
+              <p className="text-gray-600 mb-4">
+                {t('有任何问题或建议，欢迎随时联系我们')}
+              </p>
+              <div className="bg-gray-100 rounded-lg p-4 flex items-center justify-center">
+                <a
+                  href="mailto:liandyjih@gmail.com"
+                  className="text-blue-600 font-medium text-lg hover:underline"
+                  onClick={() => {
+                    // 追踪邮箱点击事件
+                    if (typeof window !== 'undefined' && window.plausible) {
+                      window.plausible('email_clicked');
+                    }
+                  }}
+                >
+                  liandyjih@gmail.com
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       )}

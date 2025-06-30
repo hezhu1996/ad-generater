@@ -2491,7 +2491,7 @@ export default function AdGenerator() {
           {/* 生成按钮 */}
           <button
             onClick={handleGenerateAds}
-            disabled={images.length === 0 || (adTextGroups.length === 0 && buttonStyle.textOptions.every(opt => !opt.trim())) || isGenerating || getSelectedPlatformCount() === 0}
+            disabled={images.length === 0 || isGenerating || getSelectedPlatformCount() === 0}
             className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
           >
             {isGenerating ? t('Generating...') : t('Generate All Ad Images')}
