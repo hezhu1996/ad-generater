@@ -42,7 +42,7 @@ export default function RootLayout({
         <Script 
           defer 
           data-domain="rapidad.net" 
-          src="https://plausible.io/js/script.js"
+          src="https://plausible.io/js/script.tagged-events.js"
           strategy="afterInteractive"
         />
         {/* Plausible Analytics 自定义事件跟踪 */}
