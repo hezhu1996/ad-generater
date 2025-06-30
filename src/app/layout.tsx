@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+// 只保留描述，标题将由DynamicTitle组件动态设置
 export const metadata: Metadata = {
-  title: "批量广告图片生成器",
   description: "上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片",
 };
 
@@ -37,10 +37,11 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Serif+TC:wght@400;600;700&family=Zen+Old+Mincho:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" 
           rel="stylesheet"
         />
+        <meta name="description" content="上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片" />
         {/* Plausible Analytics - 请替换 yourdomain.com 为您的实际域名 */}
         <Script 
           defer 
-          data-domain="yourdomain.com" 
+          data-domain="rapidad.net" 
           src="https://plausible.io/js/script.js"
           strategy="afterInteractive"
         />

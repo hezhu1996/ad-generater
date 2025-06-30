@@ -4,6 +4,7 @@ import AdGenerator from '@/components/AdGenerator'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import I18nProvider from '@/components/I18nProvider'
 import FeedbackForm from '@/components/FeedbackForm'
+import DynamicTitle from '@/components/DynamicTitle'
 import { useTranslation } from 'react-i18next'
 import usePageTracking from '@/components/usePageTracking'
 
@@ -18,6 +19,7 @@ function Home() {
   
   return (
     <div className="min-h-screen bg-gray-50">
+      <DynamicTitle />
       <div className="container mx-auto px-4 py-8 relative">
         <LanguageSwitcher />
         
