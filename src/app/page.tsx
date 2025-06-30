@@ -3,6 +3,7 @@
 import AdGenerator from '@/components/AdGenerator'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import I18nProvider from '@/components/I18nProvider'
+import FeedbackForm from '@/components/FeedbackForm'
 import { useTranslation } from 'react-i18next'
 import usePageTracking from '@/components/usePageTracking'
 
@@ -29,6 +30,9 @@ function Home() {
           </p>
         </div>
         <AdGenerator />
+        
+        {/* 添加反馈表单组件 */}
+        <FeedbackForm />
       </div>
     </div>
   );

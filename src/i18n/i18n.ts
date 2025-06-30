@@ -11,6 +11,26 @@ const zhResources = {
     '批量广告图片生成器': '批量广告图片生成器',
     '上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片': '上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片',
     
+    // 反馈表单相关翻译
+    '反馈': '反馈',
+    '我们重视您的意见': '我们重视您的意见',
+    '反馈类型': '反馈类型',
+    '建议': '建议',
+    '问题报告': '问题报告',
+    '功能请求': '功能请求',
+    '其他': '其他',
+    '详细描述': '详细描述',
+    '请在此处描述您的想法、建议或问题...': '请在此处描述您的想法、建议或问题...',
+    '邮箱': '邮箱',
+    '选填': '选填',
+    '我们将通知您最新功能和模板': '我们将通知您最新功能和模板',
+    '留下邮箱获得更多模板和首发功能通知': '留下邮箱获得更多模板和首发功能通知',
+    '提交中...': '提交中...',
+    '提交反馈': '提交反馈',
+    '谢谢您的反馈！': '谢谢您的反馈！',
+    '我们已收到您的反馈，并会通过邮箱通知您后续进展。': '我们已收到您的反馈，并会通过邮箱通知您后续进展。',
+    '我们已收到您的反馈，感谢您的支持！': '我们已收到您的反馈，感谢您的支持！',
+    
     // 新增模板相关翻译
     'Button Templates': '按钮模板',
     '选择按钮模板': '选择按钮模板',
@@ -182,6 +202,26 @@ const enResources = {
     // 页面标题和描述
     '批量广告图片生成器': 'Bulk Ad Image Generator',
     '上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片': 'Upload your product images, add custom text and button styles, and generate professional ADs and A/B test images for multiple platforms with one click',
+    
+    // 反馈表单相关翻译
+    '反馈': 'Feedback',
+    '我们重视您的意见': 'We Value Your Feedback',
+    '反馈类型': 'Feedback Type',
+    '建议': 'Suggestion',
+    '问题报告': 'Bug Report',
+    '功能请求': 'Feature Request',
+    '其他': 'Other',
+    '详细描述': 'Details',
+    '请在此处描述您的想法、建议或问题...': 'Please describe your thoughts, suggestions or issues here...',
+    '邮箱': 'Email',
+    '选填': 'Optional',
+    '我们将通知您最新功能和模板': 'We\'ll notify you about new features and templates',
+    '留下邮箱获得更多模板和首发功能通知': 'Leave your email to get more templates and early access to new features',
+    '提交中...': 'Submitting...',
+    '提交反馈': 'Submit Feedback',
+    '谢谢您的反馈！': 'Thank You for Your Feedback!',
+    '我们已收到您的反馈，并会通过邮箱通知您后续进展。': 'We have received your feedback and will notify you of updates via email.',
+    '我们已收到您的反馈，感谢您的支持！': 'We have received your feedback. Thank you for your support!',
     
     // 新增模板相关翻译
     'Button Templates': 'Button Templates',
