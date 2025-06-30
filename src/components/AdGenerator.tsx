@@ -8,11 +8,14 @@ import { saveAs } from 'file-saver'
 import { ButtonStyle, AdText, AdTextGroup, ImageScaleSettings } from '../types/adTypes'
 import { buttonTemplates, combinedTemplates } from '../data/buttonTemplates'
 import ThankYouModal from './feedback/ThankYouModal'
+import { useUserId, addUserIdToProps } from './UserIdTracker'
 
 // 添加Plausible跟踪函数
 const trackEvent = (eventName: string, props?: Record<string, unknown>) => {
   if (typeof window !== 'undefined' && window.plausible) {
-    window.plausible(eventName, { props });
+    // 添加用户ID到事件属性
+    const propsWithUserId = addUserIdToProps(props || {});
+    window.plausible(eventName, { props: propsWithUserId });
   }
 };
 
@@ -44,6 +47,8 @@ function debounce<T extends (...args: never[]) => unknown>(
 
 export default function AdGenerator() {
   const { t, i18n } = useTranslation();
+  // 初始化用户ID
+  const userId = useUserId();
   
   // 实用函数：检测文字是否包含中文
   const containsChinese = (text: string) => /[\u4e00-\u9fa5]/.test(text);
@@ -1037,11 +1042,12 @@ export default function AdGenerator() {
         : `广告图片_${totalImages}_变体.zip`;
       saveAs(content, zipFileName)
       
-      // 追踪事件 - 导出ZIP
-      trackEvent('export_zip', { 
+      // 追踪事件 - 导出ZIP (与Plausible目标名称"File Download"保持一致)
+      trackEvent('File Download', { 
         total_images: totalImages,
         platforms_count: platforms.length,
-        combinations_count: combinations.length
+        combinations_count: combinations.length,
+        file_name: zipFileName
       });
       
       console.log(i18n.language === 'en' 

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useUserId, addUserIdToProps } from '../UserIdTracker';
 
 // 为Plausible声明全局类型
 declare global {
@@ -22,6 +23,8 @@ const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose, imagesCo
   const [isSubscribing, setIsSubscribing] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
+  // 初始化用户ID
+  const userId = useUserId();
 
   // Don't render if not open
   if (!isOpen) return null;
@@ -30,11 +33,11 @@ const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose, imagesCo
     // If plausible is available, track the feedback event
     if (typeof window !== 'undefined' && window.plausible) {
       window.plausible('feedback_submitted', { 
-        props: { 
+        props: addUserIdToProps({ 
           feedbackType: 'generator_feedback',
           feedbackText: feedbackValue,
           imagesCount
-        } 
+        })
       });
     }
     // Mark feedback as submitted
@@ -49,10 +52,10 @@ const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose, imagesCo
     // If plausible is available, track the subscription event
     if (typeof window !== 'undefined' && window.plausible) {
       window.plausible('newsletter_subscribe', { 
-        props: { 
+        props: addUserIdToProps({ 
           source: 'thank_you_modal',
           email
-        } 
+        })
       });
     }
     
