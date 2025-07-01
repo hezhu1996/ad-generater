@@ -210,6 +210,31 @@ const zhResources = {
     
     // 中文字体支持提示
     '当前字体可能不支持中文显示，建议选择带"✓"标记的字体': '当前字体可能不支持中文显示，建议选择带"✓"标记的字体',
+    
+    // Footer 相关翻译
+    '服务条款': '服务条款',
+    '用户协议': '用户协议',
+    '隐私政策': '隐私政策',
+    'Cookie政策': 'Cookie政策',
+    '使用须知': '使用须知',
+    '内容政策': '内容政策',
+    '广告准则': '广告准则',
+    '知识产权': '知识产权',
+    '技术支持': '技术支持',
+    '意见反馈': '意见反馈',
+    '举报滥用': '举报滥用',
+    '重要声明': '重要声明',
+    '本服务仅用于生成广告创意素材，用户需确保上传内容符合相关法律法规': '本服务仅用于生成广告创意素材，用户需确保上传内容符合相关法律法规',
+    '用户对其上传的内容及生成的广告素材承担完全责任': '用户对其上传的内容及生成的广告素材承担完全责任',
+    '禁止上传涉及版权、商标侵权或违法违规的内容': '禁止上传涉及版权、商标侵权或违法违规的内容',
+    '我们保留审核、拒绝或删除不当内容的权利': '我们保留审核、拒绝或删除不当内容的权利',
+    '生成的广告素材仅供参考，实际投放需遵守各平台的广告政策': '生成的广告素材仅供参考，实际投放需遵守各平台的广告政策',
+    '保留所有权利': '保留所有权利',
+    '服务由 AI 技术驱动': '服务由 AI 技术驱动',
+    '遵循数据保护法规': '遵循数据保护法规',
+    '通过使用本服务，您同意我们的': '通过使用本服务，您同意我们的',
+    '和': '和',
+    '。我们使用 Cookie 来改善用户体验。本服务提供的AI广告生成功能仅用于合法商业用途，用户需确保遵守目标投放平台的广告政策和当地法律法规。对于因使用本服务产生的任何法律后果，用户应承担相应责任。': '。我们使用 Cookie 来改善用户体验。本服务提供的AI广告生成功能仅用于合法商业用途，用户需确保遵守目标投放平台的广告政策和当地法律法规。对于因使用本服务产生的任何法律后果，用户应承担相应责任。',
   }
 };
 
@@ -419,6 +444,31 @@ const enResources = {
     
     // 中文字体支持提示
     '当前字体可能不支持中文显示，建议选择带"✓"标记的字体': 'Current font may not support Chinese characters, please select fonts marked with "✓"',
+    
+    // Footer 相关翻译
+    '服务条款': 'Terms of Service',
+    '用户协议': 'User Agreement',
+    '隐私政策': 'Privacy Policy',
+    'Cookie政策': 'Cookie Policy',
+    '使用须知': 'Usage Guidelines',
+    '内容政策': 'Content Policy',
+    '广告准则': 'Advertising Guidelines',
+    '知识产权': 'Intellectual Property',
+    '技术支持': 'Technical Support',
+    '意见反馈': 'Feedback',
+    '举报滥用': 'Report Abuse',
+    '重要声明': 'Important Notice',
+    '本服务仅用于生成广告创意素材，用户需确保上传内容符合相关法律法规': 'This service is only for generating advertising creative materials. Users must ensure uploaded content complies with relevant laws and regulations',
+    '用户对其上传的内容及生成的广告素材承担完全责任': 'Users are fully responsible for their uploaded content and generated advertising materials',
+    '禁止上传涉及版权、商标侵权或违法违规的内容': 'Uploading content involving copyright, trademark infringement or illegal content is prohibited',
+    '我们保留审核、拒绝或删除不当内容的权利': 'We reserve the right to review, reject or delete inappropriate content',
+    '生成的广告素材仅供参考，实际投放需遵守各平台的广告政策': 'Generated advertising materials are for reference only. Actual deployment must comply with advertising policies of each platform',
+    '保留所有权利': 'All rights reserved',
+    '服务由 AI 技术驱动': 'Powered by AI technology',
+    '遵循数据保护法规': 'Compliant with data protection regulations',
+    '通过使用本服务，您同意我们的': 'By using this service, you agree to our',
+    '和': 'and',
+    '。我们使用 Cookie 来改善用户体验。本服务提供的AI广告生成功能仅用于合法商业用途，用户需确保遵守目标投放平台的广告政策和当地法律法规。对于因使用本服务产生的任何法律后果，用户应承担相应责任。': '. We use cookies to improve user experience. The AI advertising generation function provided by this service is only for legal business purposes. Users must ensure compliance with advertising policies of target platforms and local laws and regulations. Users shall bear corresponding responsibility for any legal consequences arising from the use of this service.',
   }
 };
 
@@ -474,4 +524,4 @@ i18nInstance
     }
   });
 
-export default i18nInstance; 
+export default i18nInstance;

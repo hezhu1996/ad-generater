@@ -4,6 +4,7 @@ import AdGenerator from '@/components/AdGenerator'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import I18nProvider from '@/components/I18nProvider'
 import FeedbackForm from '@/components/FeedbackForm'
+import Footer from '@/components/Footer'
 import DynamicTitle from '@/components/DynamicTitle'
 import { useTranslation } from 'react-i18next'
 import usePageTracking from '@/components/usePageTracking'
@@ -36,6 +37,9 @@ function Home() {
         {/* 添加反馈表单组件 */}
         <FeedbackForm />
       </div>
+      
+      {/* Footer组件 */}
+      <Footer />
     </div>
   );
 }
