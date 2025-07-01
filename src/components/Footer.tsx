@@ -17,17 +17,17 @@ const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-2">
               <li>
-                <a href="#terms" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <a href="/terms" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                   {t('用户协议')}
                 </a>
               </li>
               <li>
-                <a href="#privacy" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                   {t('隐私政策')}
                 </a>
               </li>
               <li>
-                <a href="#cookies" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
+                <a href="/cookies" className="text-sm text-gray-600 hover:text-gray-900 transition-colors">
                   {t('Cookie政策')}
                 </a>
               </li>
@@ -127,9 +127,9 @@ const Footer: React.FC = () => {
         <div className="mt-6 p-4 bg-gray-100 rounded-lg">
           <p className="text-xs text-gray-600 leading-relaxed">
             {t('通过使用本服务，您同意我们的')}{' '}
-            <a href="#terms" className="text-blue-600 hover:text-blue-800 underline">{t('用户协议')}</a>
+            <a href="/terms" className="text-blue-600 hover:text-blue-800 underline">{t('用户协议')}</a>
             {' '}{t('和')}{' '}
-            <a href="#privacy" className="text-blue-600 hover:text-blue-800 underline">{t('隐私政策')}</a>
+            <a href="/privacy" className="text-blue-600 hover:text-blue-800 underline">{t('隐私政策')}</a>
             {t('。我们使用 Cookie 来改善用户体验。本服务提供的AI广告生成功能仅用于合法商业用途，用户需确保遵守目标投放平台的广告政策和当地法律法规。对于因使用本服务产生的任何法律后果，用户应承担相应责任。')}
           </p>
         </div>
