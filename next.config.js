@@ -18,9 +18,7 @@ const nextConfig = {
   // 生成唯一的构建ID
   generateBuildId: async () => {
     return 'build-' + Date.now();
-  },
-  // 使用自定义输出目录
-  distDir: '.next-build'
+  }
 };
 
 module.exports = nextConfig; 

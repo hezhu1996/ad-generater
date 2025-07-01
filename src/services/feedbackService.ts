@@ -3,7 +3,7 @@
 import { FeedbackData } from '../types/feedbackTypes';
 // 使用动态导入解决LeanCloud在Next.js中的兼容性问题
 // import AV from 'leancloud-storage';
-let AV: any = null;
+let AV: typeof import('leancloud-storage') | null = null;
 
 // LeanCloud 初始化配置
 // 使用环境变量或默认值

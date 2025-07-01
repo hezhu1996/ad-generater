@@ -27,16 +27,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Nunito:wght@400;600;700&family=Raleway:wght@400;600;700&family=Inter:wght@400;500;600;700&family=DM+Sans:wght@400;500;700&family=Work+Sans:wght@400;500;600&family=Oswald:wght@400;500;600&family=Bebas+Neue&family=Playfair+Display:wght@400;600;700&family=Merriweather:wght@400;700&family=Archivo+Black&family=Fjalla+One&family=Anton&family=Pacifico&family=Caveat:wght@400;600&family=Comfortaa:wght@400;600;700&display=swap" 
-          rel="stylesheet"
-        />
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+SC:wght@400;600;700&family=Noto+Serif+TC:wght@400;600;700&family=Zen+Old+Mincho:wght@400;500;700&family=Zen+Maru+Gothic:wght@400;500;700&display=swap" 
-          rel="stylesheet"
-        />
         <meta name="description" content="上传您的产品图片，添加自定义文字和按钮样式，一键批量生成适合各大平台的专业广告和A/B测试图片" />
         {/* Plausible Analytics - 自定义事件跟踪配置 */}
         <Script 
