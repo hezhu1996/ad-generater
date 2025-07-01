@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUserId, addUserIdToProps } from '../UserIdTracker';
+import { submitFeedback } from '../../services/feedbackService';
+import { FeedbackData } from '../../types/feedbackTypes';
 
 // 为Plausible声明全局类型
 declare global {
@@ -18,9 +20,8 @@ interface ThankYouModalProps {
 }
 
 const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose, imagesCount }) => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [feedbackValue, setFeedbackValue] = useState<string>('');
-  const [isSubscribing, setIsSubscribing] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
   const [feedbackSubmitted, setFeedbackSubmitted] = useState<boolean>(false);
   // 初始化用户ID
@@ -29,44 +30,59 @@ const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose, imagesCo
   // Don't render if not open
   if (!isOpen) return null;
 
-  const handleFeedbackSubmit = () => {
-    // If plausible is available, track the feedback event
-    if (typeof window !== 'undefined' && window.plausible) {
-      window.plausible('feedback_submitted', { 
-        props: addUserIdToProps({ 
-          feedbackType: 'generator_feedback',
-          feedbackText: feedbackValue,
-          imagesCount
-        })
-      });
-    }
-    // Mark feedback as submitted
-    setFeedbackSubmitted(true);
-    // Clear feedback after submission
-    setTimeout(() => {
-      setFeedbackValue('');
-    }, 500);
-  };
-
-  const handleSubscribe = () => {
-    // If plausible is available, track the subscription event
-    if (typeof window !== 'undefined' && window.plausible) {
-      window.plausible('newsletter_subscribe', { 
-        props: addUserIdToProps({ 
-          source: 'thank_you_modal',
-          email
-        })
-      });
-    }
+  const handleFeedbackSubmit = async () => {
+    if (!feedbackValue.trim()) return;
     
-    // Show subscription confirmation
-    setIsSubscribing(true);
+    // 准备反馈数据
+    const feedbackData: FeedbackData = {
+      id: Date.now().toString(),
+      type: 'generator_feedback',
+      text: feedbackValue,
+      email: email, // 包含用户填写的邮箱（可能为空）
+      timestamp: Date.now(),
+      language: i18n.language,
+      userAgent: navigator.userAgent,
+      imagesCount: imagesCount
+    };
     
-    // Reset after 2 seconds
-    setTimeout(() => {
-      setIsSubscribing(false);
-      setEmail('');
-    }, 2000);
+    // 发送反馈到对应的服务（Google Sheets或LeanCloud）
+    try {
+      await submitFeedback(feedbackData);
+      
+      // If plausible is available, track the feedback event
+      if (typeof window !== 'undefined' && window.plausible) {
+        window.plausible('feedback_submitted', { 
+          props: addUserIdToProps({ 
+            feedbackType: 'generator_feedback',
+            feedbackText: feedbackValue,
+            hasEmail: !!email,
+            imagesCount
+          })
+        });
+      }
+      
+      // 如果用户提供了邮箱，也触发订阅事件
+      if (email && email.includes('@') && typeof window !== 'undefined' && window.plausible) {
+        window.plausible('newsletter_subscribe', { 
+          props: addUserIdToProps({ 
+            source: 'thank_you_modal',
+            email
+          })
+        });
+      }
+      
+      // Mark feedback as submitted
+      setFeedbackSubmitted(true);
+      // Clear feedback after submission
+      setTimeout(() => {
+        setFeedbackValue('');
+        setEmail('');
+      }, 500);
+    } catch (error) {
+      console.error('提交反馈失败:', error);
+      // 即使失败也标记为已提交，以提供良好的用户体验
+      setFeedbackSubmitted(true);
+    }
   };
 
   return (
@@ -98,56 +114,45 @@ const ThankYouModal: React.FC<ThankYouModalProps> = ({ isOpen, onClose, imagesCo
           </p>
         </div>
 
-        {/* Feedback section */}
+        {/* Feedback section with email */}
         <div className="mb-6">
-          <h3 className="text-lg font-medium text-gray-700 mb-2">
-            {t('如何改进这个工具？')}
-          </h3>
           {feedbackSubmitted ? (
             <div className="bg-blue-50 text-blue-700 p-3 rounded-lg text-center">
               {t('感谢您的反馈！')}
             </div>
           ) : (
             <>
+              <h3 className="text-lg font-medium text-gray-700 mb-2">
+                {t('如何改进这个工具？')}
+              </h3>
               <textarea
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
                 rows={3}
                 value={feedbackValue}
                 onChange={(e) => setFeedbackValue(e.target.value)}
                 placeholder={t('请分享您的想法和建议...')}
               />
+              
+              <h3 className="text-lg font-medium text-gray-700 mb-2">
+                {t('想获得更多广告设计技巧和工具更新？')}
+              </h3>
+              <input
+                type="email"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                placeholder={t('您的电子邮箱（选填）')}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              
               <button
                 onClick={handleFeedbackSubmit}
                 disabled={!feedbackValue.trim()}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                className="w-full px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
               >
                 {t('提交反馈')}
               </button>
             </>
           )}
-        </div>
-
-        {/* Newsletter subscription */}
-        <div className="border-t border-gray-200 pt-5">
-          <h3 className="text-lg font-medium text-gray-700 mb-2">
-            {t('想获得更多广告设计技巧和工具更新？')}
-          </h3>
-          <div className="flex">
-            <input
-              type="email"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder={t('您的电子邮箱')}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <button
-              onClick={handleSubscribe}
-              disabled={!email.includes('@') || isSubscribing}
-              className="px-4 py-2 bg-green-500 text-white rounded-r-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-            >
-              {isSubscribing ? t('已订阅!') : t('订阅')}
-            </button>
-          </div>
         </div>
       </div>
     </div>

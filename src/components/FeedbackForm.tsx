@@ -2,20 +2,22 @@
 
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { FeedbackType, FeedbackData } from '../types/feedbackTypes';
+import { submitFeedback } from '../services/feedbackService';
+import { addUserIdToProps } from '../services/UserIdTracker';
 
-// 反馈类型定义
-type FeedbackType = 'suggestion' | 'bug' | 'feature' | 'other';
+// 移除本地类型定义，使用导入的类型
+// type FeedbackType = 'suggestion' | 'bug' | 'feature' | 'other';
 
-// 反馈数据结构
-interface FeedbackData {
-  id: string;
-  type: FeedbackType;
-  text: string;
-  email: string;
-  timestamp: number;
-  language: string;
-  userAgent: string;
-}
+// interface FeedbackData {
+//   id: string;
+//   type: FeedbackType;
+//   text: string;
+//   email: string;
+//   timestamp: number;
+//   language: string;
+//   userAgent: string;
+// }
 
 const FeedbackForm: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -28,56 +30,7 @@ const FeedbackForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Google Sheets Web App URL - 替换为您部署的Apps Script URL
-  const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzHJsVaHIojHprsT3nbE7Y_P8dnl4Fc6rCr-si7HEyPkOQVykvDww5z0VTtbQZ-YIt37A/exec';
-
-  // 发送反馈到Google Sheets
-  const sendFeedbackToGoogleSheets = async (data: FeedbackData): Promise<boolean> => {
-    try {
-      // 创建URL编码的参数字符串，手动处理编码确保中文和特殊字符正确传输
-      const params = new URLSearchParams();
-      params.append('id', data.id);
-      params.append('type', data.type);
-      params.append('text', data.text); // URLSearchParams会自动进行URL编码
-      params.append('email', data.email);
-      params.append('timestamp', data.timestamp.toString());
-      params.append('language', data.language);
-      params.append('userAgent', data.userAgent);
-
-      // 使用fetch API提交数据
-      const response = await fetch(GOOGLE_SHEETS_URL, {
-        method: 'POST',
-        mode: 'no-cors', // 绕过CORS限制
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8', // 确保UTF-8编码
-        },
-        body: params.toString()
-      });
-      
-      // 打印请求信息到控制台，便于调试
-      console.log('提交的数据:', {
-        url: GOOGLE_SHEETS_URL,
-        parameters: Object.fromEntries(params.entries())
-      });
-      
-      // 也保存到localStorage作为备份
-      const existingFeedback: FeedbackData[] = JSON.parse(localStorage.getItem('userFeedback') || '[]');
-      existingFeedback.push(data);
-      localStorage.setItem('userFeedback', JSON.stringify(existingFeedback));
-
-      return true;
-    } catch (err) {
-      console.error('发送反馈到Google Sheets失败:', err);
-      
-      // 失败时也保存到localStorage
-      const existingFeedback: FeedbackData[] = JSON.parse(localStorage.getItem('userFeedback') || '[]');
-      existingFeedback.push(data);
-      localStorage.setItem('userFeedback', JSON.stringify(existingFeedback));
-      
-      setError(t('提交失败，但已保存在本地'));
-      return false;
-    }
-  };
+  // 移除Google Sheets URL和函数
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,17 +50,21 @@ const FeedbackForm: React.FC = () => {
         userAgent: navigator.userAgent,
       };
       
-      // 发送到Google Sheets
-      await sendFeedbackToGoogleSheets(feedbackData);
+      // 使用智能提交服务
+      const success = await submitFeedback(feedbackData);
+      
+      if (!success) {
+        setError(t('提交可能失败，但已保存在本地'));
+      }
       
       // 如果集成了Plausible，跟踪事件
       if (typeof window !== 'undefined' && window.plausible) {
         window.plausible('feedback_submitted', { 
-          props: { 
+          props: addUserIdToProps({ 
             feedbackType,
             hasEmail: !!email,
             language: i18n.language
-          } 
+          })
         });
       }
       

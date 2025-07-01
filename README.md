@@ -210,6 +210,50 @@ npm start
 
 欢迎提交 Issue 和 Pull Request 来改进这个项目！
 
-## �� 许可证
+## 🎯 许可证
 
 MIT License
+
+## LeanCloud 配置指南
+
+### 1. LeanCloud 账户设置
+
+1. 访问 [LeanCloud 官网](https://www.leancloud.cn/) 并注册账号
+2. 创建新应用，选择开发版（免费）
+3. 进入应用 > 设置 > 应用凭证，获取以下信息：
+   - AppID
+   - AppKey
+   - 服务器地址(serverURL)
+
+### 2. 配置应用
+
+1. 打开文件 `src/services/feedbackService.ts`
+2. 替换以下配置项：
+   ```typescript
+   // 替换为你从LeanCloud获取的实际值
+   const LEANCLOUD_APP_ID = '你的AppID';
+   const LEANCLOUD_APP_KEY = '你的AppKey';
+   const LEANCLOUD_SERVER_URL = '你的服务器地址';
+   ```
+
+### 3. 创建数据结构
+
+1. 在LeanCloud控制台中，进入 "存储" > "数据"
+2. 创建新的Class，命名为 "Feedback"
+3. 权限设置为 "无限制"
+
+### 4. 查看收集的数据
+
+1. 进入LeanCloud控制台 > 应用 > 存储 > 数据 > Feedback
+2. 在此可以看到所有用户提交的反馈
+3. 可以点击 "导出" 按钮将数据导出为CSV格式
+
+### 功能特点
+
+- 自动检测用户地区，在中国大陆自动使用LeanCloud，其他地区使用Google Sheets
+- 即使用户离线，反馈也会保存在本地存储中
+- 支持跟踪用户UUID，便于分析用户行为
+
+---
+
+## 原项目介绍
