@@ -6,13 +6,13 @@ import { FeedbackData } from '../types/feedbackTypes';
 let AV: any = null;
 
 // LeanCloud 初始化配置
-// 请替换以下配置为你从LeanCloud获取的实际值
-const LEANCLOUD_APP_ID = 'dCLPYQ3YZUlofxENtaa4E1nT-MdYXbMMI'; // 从LeanCloud应用凭证页面获取
-const LEANCLOUD_APP_KEY = 'dpnjhz9AcZxTAoBSsVDCmhWb'; // 从LeanCloud应用凭证页面获取
-const LEANCLOUD_SERVER_URL = 'https://dclpyq3y.api.lncldglobal.com'; // 国际版服务器地址
+// 使用环境变量或默认值
+const LEANCLOUD_APP_ID = process.env.NEXT_PUBLIC_LEANCLOUD_APP_ID || 'dCLPYQ3YZUlofxENtaa4E1nT-MdYXbMMI';
+const LEANCLOUD_APP_KEY = process.env.NEXT_PUBLIC_LEANCLOUD_APP_KEY || 'dpnjhz9AcZxTAoBSsVDCmhWb';
+const LEANCLOUD_SERVER_URL = process.env.NEXT_PUBLIC_LEANCLOUD_SERVER_URL || 'https://dclpyq3y.api.lncldglobal.com';
 
 // Google Sheets Web App URL
-const GOOGLE_SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzHJsVaHIojHprsT3nbE7Y_P8dnl4Fc6rCr-si7HEyPkOQVykvDww5z0VTtbQZ-YIt37A/exec';
+const GOOGLE_SHEETS_URL = process.env.NEXT_PUBLIC_GOOGLE_SHEETS_URL || 'https://script.google.com/macros/s/AKfycbzHJsVaHIojHprsT3nbE7Y_P8dnl4Fc6rCr-si7HEyPkOQVykvDww5z0VTtbQZ-YIt37A/exec';
 
 // 初始化LeanCloud
 const initLeanCloud = async () => {
