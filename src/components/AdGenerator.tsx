@@ -2498,8 +2498,7 @@ export default function AdGenerator() {
                 // 修复：使用 images.length 而不是硬编码值
                 return totalCombinations * getSelectedPlatformCount() * images.length 
               })()} ({t('Platforms')}: {getSelectedPlatformCount()}, {t('Product Images')}: {images.length})</p>
-            </div>
-          </div>
+            </div>          </div>
 
           {/* 生成按钮 */}
           <button
@@ -2700,6 +2699,15 @@ export default function AdGenerator() {
                 <p className="text-red-500">⚠️ {t('请至少选择一个平台')}</p>
               )}
             </div>
+            
+            {/* 生成按钮 - 移动到右侧预览区域 */}
+            <button
+              onClick={handleGenerateAds}
+              disabled={images.length === 0 || isGenerating || getSelectedPlatformCount() === 0}
+              className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors mt-4"
+            >
+              {isGenerating ? t('Generating...') : t('Generate All Ad Images')}
+            </button>
           </div>
         </div>
       </div>

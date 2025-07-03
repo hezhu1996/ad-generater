@@ -45,6 +45,7 @@ const zhResources = {
     '请分享您的想法和建议...': '请分享您的想法和建议...',
     '想获得更多广告设计技巧和工具更新？': '想获得更多广告设计技巧和工具更新？',
     '您的电子邮箱': '您的电子邮箱',
+    '您的电子邮箱（选填）': '您的电子邮箱（选填）',
     '已订阅!': '已订阅!',
     '订阅': '订阅',
     
@@ -497,6 +498,7 @@ const enResources = {
     '请分享您的想法和建议...': 'Please share your thoughts and suggestions...',
     '想获得更多广告设计技巧和工具更新？': 'Want more ad design tips and tool updates?',
     '您的电子邮箱': 'Your email',
+    '您的电子邮箱（选填）': 'Your email (optional)',
     '已订阅!': 'Subscribed!',
     '订阅': 'Subscribe',
     
