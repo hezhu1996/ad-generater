@@ -2511,16 +2511,18 @@ export default function AdGenerator() {
         </div>
 
         {/* 右侧预览 */}
-        <div className="bg-white rounded-lg shadow-md p-4 sticky top-4 h-fit max-h-[calc(100vh-1rem)] overflow-y-auto preview-scrollbar">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 sticky top-0 bg-white pb-2 z-10 border-b border-gray-200 flex items-center justify-between">
-            <span>{t('Preview')}</span>
-            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full flex items-center">
-              📌 {t('Scroll Following')}
-            </span>
-          </h2>
-          <div className="space-y-3">
-            {/* 预览平台选择器 */}
-            <div className="bg-gray-50 rounded-lg p-2">
+        <div className="sticky top-4 h-fit max-h-[calc(100vh-1rem)] flex flex-col">
+          {/* 预览容器 */}
+          <div className="bg-white rounded-lg shadow-md p-4 overflow-y-auto preview-scrollbar flex-1">
+            <h2 className="text-xl font-bold mb-4 text-gray-800 sticky top-0 bg-white pb-2 z-10 border-b border-gray-200 flex items-center justify-between">
+              <span>{t('Preview')}</span>
+              <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full flex items-center">
+                📌 {t('Scroll Following')}
+              </span>
+            </h2>
+            <div className="space-y-3">
+              {/* 预览平台选择器 */}
+              <div className="bg-gray-50 rounded-lg p-2">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-gray-700">{t('预览平台:')}</span>
                 <span className="text-xs text-gray-500">
@@ -2699,12 +2701,15 @@ export default function AdGenerator() {
                 <p className="text-red-500">⚠️ {t('请至少选择一个平台')}</p>
               )}
             </div>
-            
-            {/* 生成按钮 - 移动到右侧预览区域 */}
+            </div>
+          </div>
+          
+          {/* 生成按钮 - 固定在右侧，与预览容器一起sticky */}
+          <div className="bg-white rounded-lg shadow-md p-4 mt-2">
             <button
               onClick={handleGenerateAds}
               disabled={images.length === 0 || isGenerating || getSelectedPlatformCount() === 0}
-              className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors mt-4"
+              className="w-full bg-green-500 text-white py-3 px-6 rounded-lg font-semibold text-lg hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {isGenerating ? t('Generating...') : t('Generate All Ad Images')}
             </button>
